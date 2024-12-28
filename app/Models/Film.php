@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\FilmFormat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,11 +14,13 @@ class Film extends Model
         'cover',
         'release_date',
         'description',
-        'list_id'
+        'list_id',
+        'format'
     ];
 
     protected $casts = [
-        'release_date' => 'immutable_datetime'
+        'release_date' => 'immutable_datetime',
+        'format'       => FilmFormat::class
     ];
 
     public function lists(): BelongsToMany

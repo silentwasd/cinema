@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\FilmFormat;
 use App\Http\Resources\FilmResource;
 use App\Http\Resources\UserResource;
 use App\Models\Film;
@@ -12,6 +13,7 @@ use App\Services\ComposableTable\Searchable;
 use App\Services\ComposableTable\Sortable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class FilmController extends Controller
 {
@@ -25,6 +27,7 @@ class FilmController extends Controller
             ...$this->checkSort([
                 'id',
                 'name',
+                'format',
                 'release_date'
             ]),
             'list_id' => 'nullable|exists:lists,id'
@@ -45,6 +48,7 @@ class FilmController extends Controller
     {
         $data = $request->validate([
             'name'         => 'required|string|max:255',
+            'format'       => ['required', Rule::enum(FilmFormat::class)],
             'cover'        => 'nullable|image|max:10240',
             'release_date' => 'nullable|date',
             'description'  => 'nullable|string|max:65536'
@@ -61,6 +65,7 @@ class FilmController extends Controller
     {
         $data = $request->validate([
             'name'         => 'required|string|max:255',
+            'format'       => ['required', Rule::enum(FilmFormat::class)],
             'cover'        => 'nullable|image|max:10240',
             'release_date' => 'nullable|date',
             'description'  => 'nullable|string|max:65536'
