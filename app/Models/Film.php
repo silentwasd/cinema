@@ -37,4 +37,9 @@ class Film extends Model
     {
         return $this->hasMany(Rating::class);
     }
+
+    public function watchers(): HasMany
+    {
+        return $this->hasMany(FilmWatcher::class);
+    }
 }

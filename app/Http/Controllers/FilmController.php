@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Enums\FilmFormat;
 use App\Http\Resources\FilmResource;
-use App\Http\Resources\FilmWatcherResource;
 use App\Http\Resources\UserResource;
 use App\Models\Film;
 use App\Models\ListModel;
