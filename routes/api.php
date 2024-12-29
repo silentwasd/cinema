@@ -4,7 +4,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FilmController;
 use App\Http\Controllers\FilmWatcherController;
 use App\Http\Controllers\RatingController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
@@ -16,7 +15,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('films/{film}/ratings', RatingController::class);
 
     Route::apiResource('film-watchers', FilmWatcherController::class);
-
-    Route::apiResource('users', UserController::class);
-    Route::delete('users', [UserController::class, 'destroyMany']);
 });
