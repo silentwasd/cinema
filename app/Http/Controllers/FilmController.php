@@ -4,10 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\FilmFormat;
 use App\Http\Resources\FilmResource;
-use App\Http\Resources\UserResource;
 use App\Models\Film;
-use App\Models\ListModel;
-use App\Models\User;
 use App\Services\ComposableTable\Paginable;
 use App\Services\ComposableTable\Searchable;
 use App\Services\ComposableTable\Sortable;
@@ -58,7 +55,10 @@ class FilmController extends Controller
             $data['cover'] = $request->file('cover')->store('films', 'public');
         }
 
-        Film::create($data);
+        Film::create([
+            ...$data,
+            'author_id' => $request->user()->id
+        ]);
     }
 
     public function update(Request $request, Film $film)
@@ -92,41 +92,5 @@ class FilmController extends Controller
         ]);
 
         Film::destroy($data['ids']);
-    }
-
-    public function listUsers(Film $film, ListModel $list)
-    {
-        return UserResource::collection(
-            User::findMany(
-                $film->listUsers()
-                     ->wherePivot('list_id', $list->id)
-                     ->get()
-            )
-        );
-    }
-
-    public function updateList(Request $request, Film $film, ListModel $list)
-    {
-        $data = $request->validate([
-            'users' => 'required|array|exists:users,id'
-        ]);
-
-        $film->listUsers()
-             ->wherePivot('list_id', $list->id)
-             ->syncWithPivotValues($data['users'], ['list_id' => $list->id]);
-    }
-
-    public function updateListMany(Request $request, ListModel $list)
-    {
-        $data = $request->validate([
-            'films' => 'required|array|exists:films,id',
-            'users' => 'required|array|exists:users,id'
-        ]);
-
-        foreach (Film::findMany($data['films']) as $film) {
-            $film->listUsers()
-                 ->wherePivot('list_id', $list->id)
-                 ->syncWithPivotValues($data['users'], ['list_id' => $list->id]);
-        }
     }
 }

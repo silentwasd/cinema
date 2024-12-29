@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\FilmFormat;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Film extends Model
@@ -13,7 +14,8 @@ class Film extends Model
         'cover',
         'release_date',
         'description',
-        'format'
+        'format',
+        'author_id'
     ];
 
     protected $casts = [
@@ -29,5 +31,10 @@ class Film extends Model
     public function watchers(): HasMany
     {
         return $this->hasMany(FilmWatcher::class);
+    }
+
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
