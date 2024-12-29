@@ -31,7 +31,10 @@ class FilmWatcherController extends Controller
             'watch_status' => ['nullable', Rule::enum(FilmWatchStatus::class)]
         ]);
 
-        $query = $request->user()->films()->getQuery();
+        $query = $request->user()
+                         ->films()
+                         ->with('film')
+                         ->getQuery();
 
         $query
             ->when($data['name'] ?? false, fn(Builder $when) => $when
@@ -90,5 +93,10 @@ class FilmWatcherController extends Controller
         ]);
 
         $filmWatcher->update($data);
+    }
+
+    public function destroy(FilmWatcher $filmWatcher)
+    {
+        $filmWatcher->delete();
     }
 }

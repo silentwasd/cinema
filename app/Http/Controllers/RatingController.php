@@ -7,12 +7,13 @@ use App\Models\Film;
 use App\Models\Rating;
 use Illuminate\Http\Request;
 
-class RatingController extends Controller
+class  RatingController extends Controller
 {
-    public function index(Film $film)
+    public function index(Request $request, Film $film)
     {
         return RatingResource::collection(
             $film->ratings()
+                 ->where('user_id', $request->user()->id)
                  ->latest()
                  ->get()
         );
@@ -21,21 +22,25 @@ class RatingController extends Controller
     public function store(Request $request, Film $film)
     {
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'data'    => 'required|array'
+            'data' => 'required|array'
         ]);
 
-        $film->ratings()->create($data);
+        $film->ratings()->create([
+            ...$data,
+            'user_id' => $request->user()->id
+        ]);
     }
 
     public function update(Request $request, Film $film, Rating $rating)
     {
         $data = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'data'    => 'required|array'
+            'data' => 'required|array'
         ]);
 
-        $rating->update($data);
+        $rating->update([
+            ...$data,
+            'user_id' => $request->user()->id
+        ]);
     }
 
     public function destroy(Film $film, Rating $rating)

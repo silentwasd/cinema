@@ -18,7 +18,8 @@ class FilmResource extends JsonResource
             'cover'        => $this->cover,
             'release_date' => $this->release_date?->format('d.m.Y'),
             'description'  => $this->description,
-            'is_mine'      => $this->watchers()->where('watcher_id', $request->user()?->id)->exists()
+            'is_mine'      => $this->watchers()->where('watcher_id', $request->user()?->id)->exists(),
+            'has_rating'   => $this->ratings()->where('user_id', $request->user()?->id)->exists()
         ];
     }
 }
