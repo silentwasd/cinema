@@ -27,14 +27,18 @@ class FilmWatcherController extends Controller
                 'film.name',
                 'film.format',
                 'film.release_date'
-            ])
+            ]),
+            'watch_status' => ['nullable', Rule::enum(FilmWatchStatus::class)]
         ]);
 
         $query = $request->user()->films()->getQuery();
 
-        $query->when($data['name'] ?? false, fn(Builder $when) => $when
-            ->whereHas('film', fn(Builder $has) => $has->where('name', 'LIKE', '%' . $data['name'] . '%'))
-        );
+        $query
+            ->when($data['name'] ?? false, fn(Builder $when) => $when
+                ->whereHas('film', fn(Builder $has) => $has->where('name', 'LIKE', '%' . $data['name'] . '%'))
+            )->when($data['watch_status'] ?? false, fn(Builder $when) => $when
+                ->where('status', $data['watch_status'])
+            );
 
         $this->applySort($data, $query);
 
