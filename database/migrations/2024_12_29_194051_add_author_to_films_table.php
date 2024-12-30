@@ -13,7 +13,7 @@ return new class extends Migration {
                   ->after('id')
                   ->constrained('users')
                   ->cascadeOnUpdate()
-                  ->cascadeOnDelete();
+                  ->nullOnDelete();
         });
     }
 
