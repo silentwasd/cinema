@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Management;
 
 use App\Enums\UserRole;
 use App\Models\Film;

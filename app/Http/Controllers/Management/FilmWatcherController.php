@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Management;
 
 use App\Enums\FilmWatchStatus;
-use App\Http\Resources\FilmWatcherResource;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\Management\FilmWatcherResource;
 use App\Models\Film;
 use App\Models\FilmWatcher;
 use App\Services\ComposableTable\Paginable;

@@ -1,15 +1,16 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\FilmController;
-use App\Http\Controllers\FilmWatcherController;
-use App\Http\Controllers\RatingController;
+use App\Http\Controllers\Management;
+use App\Http\Controllers\Public;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('films', FilmController::class)->except(['show']);
-    Route::apiResource('films.ratings', RatingController::class)->except(['show']);
-    Route::apiResource('film-watchers', FilmWatcherController::class)->except(['show']);
+Route::middleware('auth:sanctum')->prefix('management')->group(function () {
+    Route::apiResource('films', Management\FilmController::class)->except(['show']);
+    Route::apiResource('films.ratings', Management\RatingController::class)->except(['show']);
+    Route::apiResource('film-watchers', Management\FilmWatcherController::class)->except(['show']);
 });
+
+Route::apiResource('films', Public\FilmController::class)->only(['index']);

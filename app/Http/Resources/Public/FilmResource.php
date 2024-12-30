@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Http\Resources\Public;
+
+use App\Models\Film;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+/** @mixin Film */
+class FilmResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'name'         => $this->name,
+            'format'       => $this->format,
+            'cover'        => $this->cover,
+            'release_date' => $this->release_date?->format('Y'),
+            'description'  => $this->description,
+        ];
+    }
+}

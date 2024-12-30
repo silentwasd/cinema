@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Management;
 
 use App\Enums\FilmFormat;
-use App\Http\Resources\FilmResource;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\Management\FilmResource;
 use App\Models\Film;
 use App\Services\ComposableTable\Paginable;
 use App\Services\ComposableTable\Searchable;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources;
+namespace App\Http\Resources\Management;
 
 use App\Models\FilmWatcher;
 use Illuminate\Http\Request;
