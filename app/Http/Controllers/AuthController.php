@@ -24,4 +24,19 @@ class AuthController extends Controller
             'token' => $user->createToken('auth')->plainTextToken
         ]);
     }
+
+    public function register(Request $request)
+    {
+        $data = $request->validate([
+            'name'     => 'required|string|min:3|max:20',
+            'email'    => 'required|string|email|min:3|unique:users,email',
+            'password' => 'required|string|min:8|max:64|confirmed'
+        ]);
+
+        $user = User::create($data);
+
+        return response()->json([
+            'token' => $user->createToken('auth')->plainTextToken
+        ]);
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\Public;
 use Illuminate\Support\Facades\Route;
 
 Route::post('login', [AuthController::class, 'login']);
+Route::post('register', [AuthController::class, 'register']);
 
 Route::middleware('auth:sanctum')->prefix('management')->group(function () {
     Route::apiResource('films', Management\FilmController::class)->except(['show']);
