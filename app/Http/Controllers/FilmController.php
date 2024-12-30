@@ -84,13 +84,4 @@ class FilmController extends Controller
     {
         $film->delete();
     }
-
-    public function destroyMany(Request $request)
-    {
-        $data = $request->validate([
-            'ids' => 'required|array|exists:films,id'
-        ]);
-
-        Film::destroy($data['ids']);
-    }
 }

@@ -9,10 +9,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('films', FilmController::class);
-    Route::delete('films', [FilmController::class, 'destroyMany']);
-
-    Route::apiResource('films/{film}/ratings', RatingController::class);
-
-    Route::apiResource('film-watchers', FilmWatcherController::class);
+    Route::apiResource('films', FilmController::class)->except(['show']);
+    Route::apiResource('films.ratings', RatingController::class)->except(['show']);
+    Route::apiResource('film-watchers', FilmWatcherController::class)->except(['show']);
 });
