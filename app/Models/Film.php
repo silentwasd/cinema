@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\FilmFormat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Film extends Model
@@ -39,8 +38,8 @@ class Film extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function people(): BelongsToMany
+    public function people(): HasMany
     {
-        return $this->belongsToMany(Person::class);
+        return $this->hasMany(FilmPerson::class);
     }
 }

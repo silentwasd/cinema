@@ -64,7 +64,7 @@ class FilmController extends Controller
 
     public function show(Film $film)
     {
-        $film->load('ratings');
+        $film->load(['ratings', 'people', 'people.person']);
 
         return new FilmResource($film);
     }
