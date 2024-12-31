@@ -62,6 +62,13 @@ class FilmController extends Controller
         ]);
     }
 
+    public function show(Film $film)
+    {
+        $film->load('ratings');
+
+        return new FilmResource($film);
+    }
+
     public function update(Request $request, Film $film)
     {
         $data = $request->validate([

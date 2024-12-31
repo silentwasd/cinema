@@ -16,10 +16,7 @@ class PersonResource extends JsonResource
             'id'       => $this->id,
             'name'     => $this->name,
             'photo'    => $this->photo,
-            'can_edit' => ($request->user()->role == UserRole::Admin) ||
-                          (
-                              $this->author_id == $request->user()->id
-                          )
+            'can_edit' => $request->user()->role == UserRole::Admin || $this->author_id == $request->user()->id
         ];
     }
 }

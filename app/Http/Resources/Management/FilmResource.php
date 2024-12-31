@@ -26,7 +26,8 @@ class FilmResource extends JsonResource
                                   $this->author_id == $request->user()->id &&
                                   $this->watchers()->where('watcher_id', '!=', $request->user()?->id)->doesntExist() &&
                                   $this->ratings()->where('user_id', '!=', $request->user()?->id)->doesntExist()
-                              )
+                              ),
+            'ratings'      => RatingResource::collection($this->whenLoaded('ratings'))
         ];
     }
 }
