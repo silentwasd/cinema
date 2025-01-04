@@ -9,7 +9,8 @@ class Person extends Model
 {
     protected $fillable = [
         'name',
-        'photo'
+        'photo',
+        'author_id'
     ];
 
     public function films(): BelongsToMany

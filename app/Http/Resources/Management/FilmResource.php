@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Management;
 
+use App\Enums\FilmCinemaStatus;
 use App\Enums\UserRole;
 use App\Models\Film;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ class FilmResource extends JsonResource
                                   $this->watchers()->where('watcher_id', '!=', $request->user()?->id)->doesntExist() &&
                                   $this->ratings()->where('user_id', '!=', $request->user()?->id)->doesntExist()
                               ),
+            'can_watch'    => $this->cinema_status == FilmCinemaStatus::Published,
             'ratings'      => RatingResource::collection($this->whenLoaded('ratings')),
             'people'       => FilmPersonResource::collection($this->whenLoaded('people'))
         ];

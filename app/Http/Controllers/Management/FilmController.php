@@ -27,17 +27,13 @@ class FilmController extends Controller
                 'name',
                 'format',
                 'release_date'
-            ]),
-            'list_id' => 'nullable|exists:lists,id'
+            ])
         ]);
 
         $query = Film::query();
 
         $this->applySearch($data, $query);
         $this->applySort($data, $query);
-
-        if ($data['list_id'] ?? false)
-            $query->whereHas('lists', fn(Builder $lists) => $lists->where('lists.id', $data['list_id']));
 
         return FilmResource::collection($this->applyPagination($data, $query));
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\FilmCinemaStatus;
 use App\Enums\FilmFormat;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,8 +20,9 @@ class Film extends Model
     ];
 
     protected $casts = [
-        'release_date' => 'immutable_datetime',
-        'format'       => FilmFormat::class
+        'release_date'  => 'immutable_datetime',
+        'format'        => FilmFormat::class,
+        'cinema_status' => FilmCinemaStatus::class
     ];
 
     public function ratings(): HasMany
@@ -41,5 +43,20 @@ class Film extends Model
     public function people(): HasMany
     {
         return $this->hasMany(FilmPerson::class);
+    }
+
+    public function download(): BelongsTo
+    {
+        return $this->belongsTo(Download::class);
+    }
+
+    public function audioVariants(): HasMany
+    {
+        return $this->hasMany(FilmAudioVariant::class);
+    }
+
+    public function videoVariants(): HasMany
+    {
+        return $this->hasMany(FilmVideoVariant::class);
     }
 }
