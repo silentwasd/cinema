@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Management;
 
 use App\Enums\FilmFormat;
+use App\Enums\PersonRole;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Management\FilmResource;
 use App\Models\Film;
@@ -27,11 +28,29 @@ class FilmController extends Controller
                 'name',
                 'format',
                 'release_date'
-            ])
+            ]),
+            'format'    => ['nullable', Rule::enum(FilmFormat::class)],
+            'directors' => ['nullable', 'array', 'exists:people,id'],
+            'actors'    => ['nullable', 'array', 'exists:people,id']
         ]);
 
         $query = Film::query()
                      ->with(['people', 'people.person']);
+
+        $query
+            ->when($data['format'] ?? false, fn(Builder $when) => $when
+                ->where('format', $data['format'])
+            )->when($data['directors'] ?? false, fn(Builder $when) => $when
+                ->whereHas('people', fn(Builder $has) => $has
+                    ->whereIn('film_people.person_id', $data['directors'])
+                    ->where('role', PersonRole::Director)
+                )
+            )->when($data['actors'] ?? false, fn(Builder $when) => $when
+                ->whereHas('people', fn(Builder $has) => $has
+                    ->whereIn('film_people.person_id', $data['actors'])
+                    ->where('role', PersonRole::Actor)
+                )
+            );
 
         $this->applySearch($data, $query);
         $this->applySort($data, $query);

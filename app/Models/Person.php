@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Person extends Model
 {
@@ -13,8 +13,8 @@ class Person extends Model
         'author_id'
     ];
 
-    public function films(): BelongsToMany
+    public function films(): HasMany
     {
-        return $this->belongsToMany(Film::class);
+        return $this->hasMany(FilmPerson::class);
     }
 }

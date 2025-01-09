@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Management;
 
+use App\Enums\PersonRole;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Management\PersonResource;
 use App\Models\Person;
 use App\Services\ComposableTable\Paginable;
 use App\Services\ComposableTable\Searchable;
 use App\Services\ComposableTable\Sortable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PersonController extends Controller
 {
@@ -22,10 +25,16 @@ class PersonController extends Controller
             ...$this->checkSort([
                 'id',
                 'name'
-            ])
+            ]),
+            'role' => ['nullable', Rule::enum(PersonRole::class)]
         ]);
 
-        $query = Person::query();
+        $query = Person::query()
+                       ->when($data['role'] ?? null, fn(Builder $when) => $when
+                           ->whereHas('films', fn(Builder $has) => $has
+                               ->where('film_people.role', $data['role'])
+                           )
+                       );
 
         $this->applySearch($data, $query);
         $this->applySort($data, $query);

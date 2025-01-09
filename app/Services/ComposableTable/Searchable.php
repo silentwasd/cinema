@@ -17,6 +17,6 @@ trait Searchable
     protected function applySearch(array $data, Builder $query, string $column = 'name'): Builder
     {
         return $query->when($data[$column] ?? false, fn(Builder $when) => $when->where($column, 'LIKE', '%' . $data[$column] . '%'))
-                     ->when($data['model_id'] ?? false, fn(Builder $when) => $when->where('id', $data['model_id']));
+                     ->when($data['model_id'] ?? [], fn(Builder $when) => $when->whereIn('id', is_array($data['model_id']) ? $data['model_id'] : [$data['model_id']], ($data[$column] ?? false) ? 'OR' : 'AND'));
     }
 }
