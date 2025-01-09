@@ -34,7 +34,7 @@ class FilmWatcherController extends Controller
 
         $query = $request->user()
                          ->films()
-                         ->with('film')
+                         ->with(['film', 'film.people', 'film.people.person'])
                          ->getQuery();
 
         $query
