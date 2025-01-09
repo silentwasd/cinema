@@ -30,7 +30,8 @@ class FilmController extends Controller
             ])
         ]);
 
-        $query = Film::query();
+        $query = Film::query()
+                     ->with(['people', 'people.person']);
 
         $this->applySearch($data, $query);
         $this->applySort($data, $query);
