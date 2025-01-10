@@ -31,6 +31,7 @@ Route::middleware(['auth:sanctum', AdminMiddleware::class])->prefix('production'
 
     Route::apiResource('films.audio-variants', Production\FilmAudioVariantController::class);
     Route::post('films/{film}/audio-variants/preview', [Production\FilmAudioVariantController::class, 'preview']);
+    Route::post('films/{film}/audio-variants/{audio_variant}/mark-as-default', [Production\FilmAudioVariantController::class, 'markAsDefault']);
 });
 
 Route::middleware('auth:sanctum')->prefix('cinema')->group(function () {

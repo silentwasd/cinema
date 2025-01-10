@@ -49,6 +49,14 @@ class FilmAudioVariantController extends Controller
                                   ->onQueue('ffmpeg');
     }
 
+    public function markAsDefault(Film $film, FilmAudioVariant $audioVariant)
+    {
+        $film->audioVariants()->update(['is_default' => false]);
+
+        $audioVariant->is_default = true;
+        $audioVariant->save();
+    }
+
     public function preview(Request $request, Film $film)
     {
         $data = $request->validate([
