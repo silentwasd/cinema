@@ -11,13 +11,17 @@ use Illuminate\Support\Facades\Route;
 Route::post('login', [AuthController::class, 'login']);
 Route::post('register', [AuthController::class, 'register']);
 
-Route::middleware('auth:sanctum')->prefix('management')->group(function () {
-    Route::apiSingleton('profile', Management\ProfileController::class)->only(['show']);
-    Route::apiResource('films', Management\FilmController::class);
-    Route::apiResource('films.ratings', Management\RatingController::class)->except(['show']);
-    Route::apiResource('films.persons', Management\FilmPersonController::class)->except(['show']);
-    Route::apiResource('film-watchers', Management\FilmWatcherController::class)->except(['show']);
-    Route::apiResource('people', Management\PersonController::class)->except(['show']);
+Route::prefix('management')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::apiSingleton('profile', Management\ProfileController::class)->only(['show']);
+        Route::apiResource('films', Management\FilmController::class)->except(['show']);
+        Route::apiResource('films.ratings', Management\RatingController::class)->except(['show']);
+        Route::apiResource('films.persons', Management\FilmPersonController::class)->except(['show']);
+        Route::apiResource('film-watchers', Management\FilmWatcherController::class)->except(['show']);
+        Route::apiResource('people', Management\PersonController::class)->except(['show']);
+    });
+
+    Route::apiResource('films', Management\FilmController::class)->only(['show']);
 });
 
 Route::middleware(['auth:sanctum', AdminMiddleware::class])->prefix('production')->group(function () {

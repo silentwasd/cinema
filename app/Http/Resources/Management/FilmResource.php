@@ -15,6 +15,7 @@ class FilmResource extends JsonResource
     {
         return [
             'id'           => $this->id,
+            'author_id'    => $this->author_id,
             'name'         => $this->name,
             'format'       => $this->format,
             'cover'        => $this->cover,
@@ -22,12 +23,15 @@ class FilmResource extends JsonResource
             'description'  => $this->description,
             'is_mine'      => $this->watchers()->where('watcher_id', $request->user()?->id)->exists(),
             'has_rating'   => $this->ratings()->where('user_id', $request->user()?->id)->exists(),
-            'can_edit'     => ($request->user()->role == UserRole::Admin) ||
-                              (
-                                  $this->author_id == $request->user()->id &&
-                                  $this->watchers()->where('watcher_id', '!=', $request->user()?->id)->doesntExist() &&
-                                  $this->ratings()->where('user_id', '!=', $request->user()?->id)->doesntExist()
-                              ),
+            'can_edit'     => $this->when(
+                !!$request->user(),
+                fn() => ($request->user()->role == UserRole::Admin) ||
+                        (
+                            $this->author_id == $request->user()->id &&
+                            $this->watchers()->where('watcher_id', '!=', $request->user()?->id)->doesntExist() &&
+                            $this->ratings()->where('user_id', '!=', $request->user()?->id)->doesntExist()
+                        )
+            ),
             'can_watch'    => $this->cinema_status == FilmCinemaStatus::Published,
             'ratings'      => RatingResource::collection($this->whenLoaded('ratings')),
             'people'       => FilmPersonResource::collection($this->whenLoaded('people'))
