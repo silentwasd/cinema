@@ -2,6 +2,8 @@
 
 namespace App\Http\Resources\Production;
 
+use App\Enums\FilmAudioVariantStatus;
+use App\Enums\FilmVideoVariantStatus;
 use App\Models\Film;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -19,7 +21,9 @@ class FilmResource extends JsonResource
             'cinema_status'        => $this->cinema_status,
             'video_variants_count' => $this->whenCounted('videoVariants'),
             'audio_variants_count' => $this->whenCounted('audioVariants'),
-            'has_download'         => !!$this->download
+            'has_download'         => !!$this->download,
+            'is_video_ready'       => $this->whenLoaded('videoVariants', fn() => $this->videoVariants->filter(fn($variant) => $variant->status == FilmVideoVariantStatus::Completed)->count() > 0),
+            'is_audio_ready'       => $this->whenLoaded('audioVariants', fn() => $this->audioVariants->filter(fn($variant) => $variant->status == FilmAudioVariantStatus::Completed)->count() > 0)
         ];
     }
 }

@@ -39,6 +39,7 @@ class FilmController extends Controller
         }
 
         $film->loadCount(['videoVariants', 'audioVariants']);
+        $film->load(['videoVariants', 'audioVariants']);
 
         return (new FilmResource($film))->additional([
             ...$film->download ? [
