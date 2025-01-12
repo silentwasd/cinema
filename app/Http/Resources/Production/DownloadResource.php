@@ -16,7 +16,8 @@ class DownloadResource extends JsonResource
             'name'     => $this->name,
             'hash'     => $this->hash,
             'status'   => $this->status,
-            'progress' => $this->progress
+            'progress' => $this->progress,
+            'has_film' => $this->film()->exists()
         ];
     }
 }

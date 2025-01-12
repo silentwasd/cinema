@@ -16,48 +16,51 @@ class FilmController extends Controller
     public function index()
     {
         return FilmResource::collection(
-            Film::where('cinema_status', '!=', FilmCinemaStatus::NotAvailable)->get()
+            Film::where('cinema_status', '!=', FilmCinemaStatus::NotAvailable)
+                ->with('download')
+                ->withCount(['videoVariants', 'audioVariants'])
+                ->orderByRaw("FIELD(cinema_status, 'preparing', 'published')")
+                ->get()
         );
     }
 
     public function show(Film $film)
     {
-        $name = $film->download->name;
+        if ($film->download) {
+            $name = $film->download->name;
+            $path = config('services.transmission.downloads') . '/' . $name;
 
-        $path = config('services.transmission.downloads') . '/' . $name;
+            if (!file_exists($path))
+                abort(404, 'Path of downloaded film not found.');
 
-        if (!file_exists($path)) {
-            abort(404, 'Path of downloaded film not found.');
+            $slashedPath = addslashes($path);
+            $result = Process::run("ffprobe -v quiet -print_format json -show_format -show_streams \"$slashedPath\"");
+            $info = json_decode($result->output(), true);
         }
-
-        $slashedPath = addslashes($path);
-
-        $result = Process::run("ffprobe -v quiet -print_format json -show_format -show_streams \"$slashedPath\"");
-
-        $info = json_decode($result->output(), true);
 
         $film->loadCount(['videoVariants', 'audioVariants']);
 
         return (new FilmResource($film))->additional([
-            'raw'  => $info,
-            'info' => [
-                'video' => [
-                    'width'    => $info['streams'][0]['width'],
-                    'height'   => $info['streams'][0]['height'],
-                    'bitrate'  => $info['format']['bit_rate'],
-                    'has_hdr'  => isset($info['streams'][0]['color_space']) ? Str::startsWith($info['streams'][0]['color_space'], 'bt2020') : false,
-                    'duration' => $info['format']['duration']
-                ],
-                'audio' => collect($info['streams'])
-                    ->filter(fn($stream) => $stream['codec_type'] == 'audio' && (isset($stream['bit_rate']) || isset($stream['tags']['BPS'])))
-                    ->map(fn($stream) => [
-                        'index'   => $stream['index'],
-                        'bitrate' => $stream['bit_rate'] ?? $stream['tags']['BPS'],
-                        ...isset($stream['tags']['title']) ? ['title' => $stream['tags']['title']] : [],
-                        ...isset($stream['tags']['language']) ? ['language' => $stream['tags']['language']] : [],
-                    ])
-                    ->values()
-            ]
+            ...$film->download ? [
+                'info' => [
+                    'video' => [
+                        'width'    => $info['streams'][0]['width'],
+                        'height'   => $info['streams'][0]['height'],
+                        'bitrate'  => $info['format']['bit_rate'],
+                        'has_hdr'  => isset($info['streams'][0]['color_space']) ? Str::startsWith($info['streams'][0]['color_space'], 'bt2020') : false,
+                        'duration' => $info['format']['duration']
+                    ],
+                    'audio' => collect($info['streams'])
+                        ->filter(fn($stream) => $stream['codec_type'] == 'audio' && (isset($stream['bit_rate']) || isset($stream['tags']['BPS'])))
+                        ->map(fn($stream) => [
+                            'index'   => $stream['index'],
+                            'bitrate' => $stream['bit_rate'] ?? $stream['tags']['BPS'],
+                            ...isset($stream['tags']['title']) ? ['title' => $stream['tags']['title']] : [],
+                            ...isset($stream['tags']['language']) ? ['language' => $stream['tags']['language']] : [],
+                        ])
+                        ->values()
+                ]
+            ] : []
         ]);
     }
 
@@ -99,5 +102,14 @@ class FilmController extends Controller
         }
 
         return response($content);
+    }
+
+    public function destroy(Film $film)
+    {
+        if ($film->cinema_status == FilmCinemaStatus::Preparing)
+            $film->cinema_status = FilmCinemaStatus::NotAvailable;
+
+        $film->download_id = null;
+        $film->save();
     }
 }

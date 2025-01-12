@@ -18,7 +18,8 @@ class FilmResource extends JsonResource
             'release_date'         => $this->release_date?->getTimestampMs(),
             'cinema_status'        => $this->cinema_status,
             'video_variants_count' => $this->whenCounted('videoVariants'),
-            'audio_variants_count' => $this->whenCounted('audioVariants')
+            'audio_variants_count' => $this->whenCounted('audioVariants'),
+            'has_download'         => !!$this->download
         ];
     }
 }
