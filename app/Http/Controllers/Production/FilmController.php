@@ -8,8 +8,12 @@ use App\Enums\FilmVideoVariantStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Production\FilmResource;
 use App\Models\Film;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
+use Symfony\Component\Finder\SplFileInfo;
 
 class FilmController extends Controller
 {
@@ -24,8 +28,15 @@ class FilmController extends Controller
         );
     }
 
-    public function show(Film $film)
+    public function show(Request $request, Film $film)
     {
+        $data = $request->validate([
+            'file' => 'nullable|string'
+        ]);
+
+        $files = collect();
+        $path  = null;
+
         if ($film->download) {
             $name = $film->download->name;
             $path = config('services.transmission.downloads') . '/' . $name;
@@ -33,9 +44,26 @@ class FilmController extends Controller
             if (!file_exists($path))
                 abort(404, 'Path of downloaded film not found.');
 
+            if (File::isDirectory($path)) {
+                $files = collect(File::allFiles($path))
+                    ->filter(fn(SplFileInfo $file) => in_array($file->getExtension(), [
+                        'mp4',
+                        'mkv',
+                        'mov',
+                        'avi',
+                        'm2ts'
+                    ]));
+
+                $path = $files->filter(fn(SplFileInfo $file) => ($data['file'] ?? false) ? $file->getFilename() == $data['file'] : true)
+                              ->first()
+                              ->getPathname();
+            } else {
+                $files = collect([File::get($path)]);
+            }
+
             $slashedPath = addslashes($path);
-            $result = Process::run("ffprobe -v quiet -print_format json -show_format -show_streams \"$slashedPath\"");
-            $info = json_decode($result->output(), true);
+            $result      = Process::run("ffprobe -v quiet -print_format json -show_format -show_streams \"$slashedPath\"");
+            $info        = json_decode($result->output(), true);
         }
 
         $film->loadCount(['videoVariants', 'audioVariants']);
@@ -43,13 +71,13 @@ class FilmController extends Controller
 
         return (new FilmResource($film))->additional([
             ...$film->download ? [
-                'info' => [
+                'info'         => [
                     'video' => [
-                        'width'    => $info['streams'][0]['width'],
-                        'height'   => $info['streams'][0]['height'],
-                        'bitrate'  => $info['format']['bit_rate'],
+                        'width'    => $info['streams'][0]['width'] ?? 0,
+                        'height'   => $info['streams'][0]['height'] ?? 0,
+                        'bitrate'  => $info['format']['bit_rate'] ?? 0,
                         'has_hdr'  => isset($info['streams'][0]['color_space']) ? Str::startsWith($info['streams'][0]['color_space'], 'bt2020') : false,
-                        'duration' => $info['format']['duration']
+                        'duration' => $info['format']['duration'] ?? 0
                     ],
                     'audio' => collect($info['streams'])
                         ->filter(fn($stream) => $stream['codec_type'] == 'audio' && (isset($stream['bit_rate']) || isset($stream['tags']['BPS'])))
@@ -60,7 +88,9 @@ class FilmController extends Controller
                             ...isset($stream['tags']['language']) ? ['language' => $stream['tags']['language']] : [],
                         ])
                         ->values()
-                ]
+                ],
+                'files'        => $files->map(fn(SplFileInfo $file) => $file->getFilename())->values(),
+                'selectedFile' => $files->filter(fn(SplFileInfo $file) => $file->getPathname() == $path)->first()->getFilename()
             ] : []
         ]);
     }
