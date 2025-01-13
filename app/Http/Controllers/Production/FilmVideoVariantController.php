@@ -11,6 +11,7 @@ use App\Models\FilmVideoVariant;
 use App\Services\ProductionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class FilmVideoVariantController extends Controller
@@ -82,5 +83,21 @@ class FilmVideoVariantController extends Controller
             return response()->download($previewPath);
 
         abort(500, $result->errorOutput());
+    }
+
+    public function destroy(Film $film, FilmVideoVariant $videoVariant)
+    {
+        $m3u8 = $videoVariant->path . '.m3u8';
+
+        $content = Storage::disk('public')->get($m3u8);
+
+        if (!preg_match_all("/(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}_\d{3}\.ts)/", $content, $matches))
+            abort(404, "Can't parse m3u8 file.");
+
+        foreach ($matches[1] as $match) {
+            Storage::disk('public')->delete('streams/' . $match);
+        }
+
+        Storage::disk('public')->delete($m3u8);
     }
 }
