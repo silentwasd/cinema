@@ -51,4 +51,19 @@ class DownloadController extends Controller
         $film->download_id   = $download->id;
         $film->save();
     }
+
+    public function destroy(Download $download)
+    {
+        $name = $download->name;
+        $path = config('services.transmission.downloads') . '/' . $name;
+
+        if (!file_exists($path))
+            abort(404, 'Path of downloaded film not found.');
+
+        $transmission = new Transmission();
+        $torrent      = collect($transmission->all())->first(fn($torrent) => $torrent->getHash() == $download->hash);
+        $transmission->remove($torrent, true);
+
+        $download->delete();
+    }
 }

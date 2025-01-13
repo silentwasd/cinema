@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\DownloadStatus;
 use App\Models\Download;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,7 +31,7 @@ class DownloadWaitNameJob implements ShouldQueue
                     return;
 
                 $this->download->name     = $torrent->getName();
-                $this->download->status   = $torrent->getStatus();
+                $this->download->status   = DownloadStatus::fromInt($torrent->getStatus());
                 $this->download->progress = $torrent->getPercentDone();
                 $this->download->save();
 
