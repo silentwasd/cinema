@@ -97,5 +97,7 @@ class FilmAudioVariantController extends Controller
         }
 
         Storage::disk('public')->delete($m3u8);
+
+        $audioVariant->delete();
     }
 }
