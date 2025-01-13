@@ -14,7 +14,8 @@ class FilmVideoVariant extends Model
         'crf',
         'width',
         'height',
-        'to_sdr'
+        'to_sdr',
+        'input_path'
     ];
 
     protected $casts = [

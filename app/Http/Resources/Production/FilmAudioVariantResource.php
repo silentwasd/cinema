@@ -19,7 +19,8 @@ class FilmAudioVariantResource extends JsonResource
             'language'   => $this->language,
             'status'     => $this->status,
             'is_default' => $this->is_default,
-            'path'       => $this->path ? ($this->path . '.m3u8') : null
+            'path'       => $this->path ? ($this->path . '.m3u8') : null,
+            'progress'   => $this->progress
         ];
     }
 }

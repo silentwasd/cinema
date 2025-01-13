@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Enums\FilmAudioVariantStatus;
 use App\Models\FilmAudioVariant;
+use App\Services\ProductionService;
 use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -19,8 +20,7 @@ class ProcessFilmAudioVariantJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(
-        public FilmAudioVariant $audioVariant,
-        public string           $downloadName
+        public FilmAudioVariant $audioVariant
     )
     {
     }
@@ -28,9 +28,9 @@ class ProcessFilmAudioVariantJob implements ShouldQueue
     /**
      * @throws Exception
      */
-    public function handle(): void
+    public function handle(ProductionService $production): void
     {
-        $path = $this->downloadName;
+        $path = $this->audioVariant->input_path;
 
         if (!file_exists($path))
             throw new Exception("File $path doesn't exist");
@@ -48,7 +48,22 @@ class ProcessFilmAudioVariantJob implements ShouldQueue
         $this->audioVariant->path = $shortOutputPath;
         $this->audioVariant->save();
 
-        $result = Process::timeout(0)->run("ffmpeg -ss 00:05:00 -i \"$slashedInputPath\" -t 00:01:00 -map 0:{$this->audioVariant->index} -c:a aac -b:a {$this->audioVariant->bitrate} -ac 2 -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename \"{$slashedOutputPath}_%03d.ts\" \"$slashedOutputPath.m3u8\"");
+        $data = $production->getData($path);
+
+        $result = Process::timeout(0)
+                         ->run(
+                             "ffmpeg -i \"$slashedInputPath\" -map 0:{$this->audioVariant->index} -c:a aac -b:a {$this->audioVariant->bitrate} -ac 2 -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename \"{$slashedOutputPath}_%03d.ts\" \"$slashedOutputPath.m3u8\"",
+                             function (string $type, string $output) use (&$data) {
+                                 if (!preg_match("/time=(\d{2}:\d{2}:\d{2}\.\d{2})/", $output, $matches))
+                                     return;
+
+                                 sscanf($matches[1], "%d:%d:%f", $hours, $minutes, $seconds);
+                                 $totalSeconds = ($hours * 3600) + ($minutes * 60) + $seconds;
+
+                                 $this->audioVariant->progress = floor($totalSeconds / $data['format']['duration'] * 100);
+                                 $this->audioVariant->save();
+                             }
+                         );
 
         if (!$result->successful()) {
             throw new Exception($result->errorOutput());

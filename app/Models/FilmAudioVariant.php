@@ -13,7 +13,8 @@ class FilmAudioVariant extends Model
         'language',
         'bitrate',
         'index',
-        'is_default'
+        'is_default',
+        'input_path'
     ];
 
     protected $casts = [

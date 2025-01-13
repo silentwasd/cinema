@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Download;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Process;
 
 class ProductionService
 {
@@ -20,5 +21,12 @@ class ProductionService
             return $path . '/' . $file;
 
         return $path;
+    }
+
+    public function getData(string $path): array
+    {
+        $slashedPath = addslashes($path);
+        $result      = Process::run("ffprobe -v quiet -print_format json -show_format -show_streams \"$slashedPath\"");
+        return json_decode($result->output(), true);
     }
 }

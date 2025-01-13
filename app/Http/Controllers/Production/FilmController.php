@@ -8,6 +8,7 @@ use App\Enums\FilmVideoVariantStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Production\FilmResource;
 use App\Models\Film;
+use App\Services\ProductionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +29,7 @@ class FilmController extends Controller
         );
     }
 
-    public function show(Request $request, Film $film)
+    public function show(Request $request, ProductionService $production, Film $film)
     {
         $data = $request->validate([
             'file' => 'nullable|string'
@@ -61,9 +62,7 @@ class FilmController extends Controller
                 $files = collect([File::get($path)]);
             }
 
-            $slashedPath = addslashes($path);
-            $result      = Process::run("ffprobe -v quiet -print_format json -show_format -show_streams \"$slashedPath\"");
-            $info        = json_decode($result->output(), true);
+            $info = $production->getData($path);
         }
 
         $film->loadCount(['videoVariants', 'audioVariants']);

@@ -37,10 +37,11 @@ class FilmVideoVariantController extends Controller
 
         $videoVariant = $film->videoVariants()->create([
             ...$data,
-            'to_sdr' => $data['has_hdr']
+            'to_sdr'     => $data['has_hdr'],
+            'input_path' => $production->getPath($film->download, $data['file'])
         ]);
 
-        ProcessFilmVideoVariantJob::dispatch($videoVariant, $production->getPath($film->download, $data['file']))
+        ProcessFilmVideoVariantJob::dispatch($videoVariant)
                                   ->onQueue('ffmpeg');
     }
 

@@ -36,10 +36,11 @@ class FilmAudioVariantController extends Controller
 
         $audioVariant = $film->audioVariants()->create([
             ...$data,
-            'name' => $data['title']
+            'name'       => $data['title'],
+            'input_path' => $production->getPath($film->download, $data['file'])
         ]);
 
-        ProcessFilmAudioVariantJob::dispatch($audioVariant, $production->getPath($film->download, $data['file']))
+        ProcessFilmAudioVariantJob::dispatch($audioVariant)
                                   ->onQueue('ffmpeg');
     }
 
