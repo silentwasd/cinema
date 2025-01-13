@@ -19,7 +19,8 @@ class ProcessFilmAudioVariantJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(
-        public FilmAudioVariant $audioVariant
+        public FilmAudioVariant $audioVariant,
+        public string           $downloadName
     )
     {
     }
@@ -29,13 +30,10 @@ class ProcessFilmAudioVariantJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $name = $this->audioVariant->film->download->name;
+        $path = $this->downloadName;
 
-        $path = config('services.transmission.downloads') . '/' . $name;
-
-        if (!file_exists($path)) {
+        if (!file_exists($path))
             throw new Exception("File $path doesn't exist");
-        }
 
         $this->audioVariant->status = FilmAudioVariantStatus::Processing;
         $this->audioVariant->save();
@@ -50,7 +48,7 @@ class ProcessFilmAudioVariantJob implements ShouldQueue
         $this->audioVariant->path = $shortOutputPath;
         $this->audioVariant->save();
 
-        $result = Process::timeout(0)->run("ffmpeg -i \"$slashedInputPath\" -map 0:{$this->audioVariant->index} -c:a aac -b:a {$this->audioVariant->bitrate} -ac 2 -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename \"{$slashedOutputPath}_%03d.ts\" \"$slashedOutputPath.m3u8\"");
+        $result = Process::timeout(0)->run("ffmpeg -ss 00:05:00 -i \"$slashedInputPath\" -t 00:01:00 -map 0:{$this->audioVariant->index} -c:a aac -b:a {$this->audioVariant->bitrate} -ac 2 -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename \"{$slashedOutputPath}_%03d.ts\" \"$slashedOutputPath.m3u8\"");
 
         if (!$result->successful()) {
             throw new Exception($result->errorOutput());

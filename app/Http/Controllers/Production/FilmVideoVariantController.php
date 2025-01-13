@@ -8,6 +8,7 @@ use App\Http\Resources\Production\FilmVideoVariantResource;
 use App\Jobs\ProcessFilmVideoVariantJob;
 use App\Models\Film;
 use App\Models\FilmVideoVariant;
+use App\Services\ProductionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
@@ -21,9 +22,10 @@ class FilmVideoVariantController extends Controller
         );
     }
 
-    public function store(Request $request, Film $film)
+    public function store(Request $request, ProductionService $production, Film $film)
     {
         $data = $request->validate([
+            'file'    => 'required|string',
             'name'    => 'required|string|max:255',
             'bitrate' => 'required|integer|min:0',
             'crf'     => 'required|integer|min:0',
@@ -37,7 +39,7 @@ class FilmVideoVariantController extends Controller
             'to_sdr' => $data['has_hdr']
         ]);
 
-        ProcessFilmVideoVariantJob::dispatch($videoVariant)
+        ProcessFilmVideoVariantJob::dispatch($videoVariant, $production->getPath($film->download, $data['file']))
                                   ->onQueue('ffmpeg');
     }
 
@@ -50,9 +52,10 @@ class FilmVideoVariantController extends Controller
                                   ->onQueue('ffmpeg');
     }
 
-    public function preview(Request $request, Film $film)
+    public function preview(Request $request, ProductionService $production, Film $film)
     {
         $data = $request->validate([
+            'file'    => 'required|string',
             'bitrate' => 'required|integer|min:0',
             'crf'     => 'required|integer|min:0',
             'width'   => 'required|integer|min:0',
@@ -60,13 +63,8 @@ class FilmVideoVariantController extends Controller
             'has_hdr' => 'required|boolean'
         ]);
 
-        $name = $film->download->name;
-
-        $path = config('services.transmission.downloads') . '/' . $name;
-
-        if (!file_exists($path)) {
+        if (!($path = $production->getPath($film->download, $data['file'])))
             abort(404, 'Path of downloaded film not found.');
-        }
 
         $slashedPath = addslashes($path);
 

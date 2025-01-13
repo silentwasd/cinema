@@ -8,6 +8,7 @@ use App\Http\Resources\Production\FilmAudioVariantResource;
 use App\Jobs\ProcessFilmAudioVariantJob;
 use App\Models\Film;
 use App\Models\FilmAudioVariant;
+use App\Services\ProductionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
@@ -21,9 +22,10 @@ class FilmAudioVariantController extends Controller
         );
     }
 
-    public function store(Request $request, Film $film)
+    public function store(Request $request, ProductionService $production, Film $film)
     {
         $data = $request->validate([
+            'file'       => 'required|string',
             'title'      => 'required|string|max:255',
             'language'   => 'required|string|max:255',
             'bitrate'    => 'required|integer|min:0',
@@ -36,7 +38,7 @@ class FilmAudioVariantController extends Controller
             'name' => $data['title']
         ]);
 
-        ProcessFilmAudioVariantJob::dispatch($audioVariant)
+        ProcessFilmAudioVariantJob::dispatch($audioVariant, $production->getPath($film->download, $data['file']))
                                   ->onQueue('ffmpeg');
     }
 
@@ -57,20 +59,16 @@ class FilmAudioVariantController extends Controller
         $audioVariant->save();
     }
 
-    public function preview(Request $request, Film $film)
+    public function preview(Request $request, ProductionService $production, Film $film)
     {
         $data = $request->validate([
+            'file'    => 'required|string',
             'index'   => 'required|integer|min:0',
             'bitrate' => 'required|integer|min:0'
         ]);
 
-        $name = $film->download->name;
-
-        $path = config('services.transmission.downloads') . '/' . $name;
-
-        if (!file_exists($path)) {
+        if (!($path = $production->getPath($film->download, $data['file'])))
             abort(404, 'Path of downloaded film not found.');
-        }
 
         $slashedPath = addslashes($path);
 
