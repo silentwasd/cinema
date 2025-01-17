@@ -8,6 +8,7 @@ use App\Http\Resources\Production\FilmAudioVariantResource;
 use App\Jobs\ProcessFilmAudioVariantJob;
 use App\Models\Film;
 use App\Models\FilmAudioVariant;
+use App\Services\Production\AudioProducer;
 use App\Services\ProductionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
@@ -61,7 +62,7 @@ class FilmAudioVariantController extends Controller
         $audioVariant->save();
     }
 
-    public function preview(Request $request, ProductionService $production, Film $film)
+    public function preview(Request $request, ProductionService $production, AudioProducer $producer, Film $film)
     {
         $data = $request->validate([
             'file'    => 'required|string',
@@ -76,7 +77,15 @@ class FilmAudioVariantController extends Controller
 
         $previewPath = sys_get_temp_dir() . '/' . Str::random(32) . '.mp4';
 
-        $result = Process::run("ffmpeg -ss 00:05:00 -i \"$slashedPath\" -t 00:01:00 -map 0:{$data['index']} -c:a aac -b:a {$data['bitrate']} -ac 2 $previewPath");
+        $result = $producer->input($path)
+                           ->index($data['index'])
+                           ->codec('aac')
+                           ->bitrate($data['bitrate'])
+                           ->start(minutes: 5)
+                           ->duration(minutes: 1)
+                           ->timeout(60)
+                           ->output($previewPath)
+                           ->produce();
 
         if ($result->successful())
             return response()->download($previewPath);

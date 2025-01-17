@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Enums\FilmAudioVariantStatus;
 use App\Models\FilmAudioVariant;
-use App\Services\ProductionService;
+use App\Services\Production\AudioProducer;
 use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,7 +28,7 @@ class ProcessFilmAudioVariantJob implements ShouldQueue
     /**
      * @throws Exception
      */
-    public function handle(ProductionService $production): void
+    public function handle(AudioProducer $producer): void
     {
         $path = $this->audioVariant->input_path;
 
@@ -38,32 +38,21 @@ class ProcessFilmAudioVariantJob implements ShouldQueue
         $this->audioVariant->status = FilmAudioVariantStatus::Processing;
         $this->audioVariant->save();
 
-        $slashedInputPath = addslashes($path);
-
         Storage::disk('public')->makeDirectory('streams');
 
-        $shortOutputPath   = 'streams/' . Str::uuid();
-        $slashedOutputPath = addslashes(Storage::disk('public')->path($shortOutputPath));
-
-        $this->audioVariant->path = $shortOutputPath;
+        $this->audioVariant->path = 'streams/' . Str::uuid();
         $this->audioVariant->save();
 
-        $data = $production->getData($path);
-
-        $result = Process::timeout(0)
-                         ->run(
-                             "ffmpeg -i \"$slashedInputPath\" -map 0:{$this->audioVariant->index} -c:a aac -b:a {$this->audioVariant->bitrate} -ac 2 -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename \"{$slashedOutputPath}_%03d.ts\" \"$slashedOutputPath.m3u8\"",
-                             function (string $type, string $output) use (&$data) {
-                                 if (!preg_match("/time=(\d{2}:\d{2}:\d{2}\.\d{2})/", $output, $matches))
-                                     return;
-
-                                 sscanf($matches[1], "%d:%d:%f", $hours, $minutes, $seconds);
-                                 $totalSeconds = ($hours * 3600) + ($minutes * 60) + $seconds;
-
-                                 $this->audioVariant->progress = floor($totalSeconds / $data['format']['duration'] * 100);
-                                 $this->audioVariant->save();
-                             }
-                         );
+        $result = $producer->input($path)
+                           ->codec('aac')
+                           ->index($this->audioVariant->index)
+                           ->bitrate($this->audioVariant->bitrate)
+                           ->output(Storage::disk('public')->path($this->audioVariant->path))
+                           ->asHls()
+                           ->produce(function (int $progress) {
+                               $this->audioVariant->progress = $progress;
+                               $this->audioVariant->save();
+                           });
 
         if (!$result->successful()) {
             throw new Exception($result->errorOutput());

@@ -11,8 +11,6 @@ use App\Models\Film;
 use App\Services\ProductionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\SplFileInfo;
 
@@ -59,7 +57,7 @@ class FilmController extends Controller
                               ->first()
                               ->getPathname();
             } else {
-                $files = collect([File::get($path)]);
+                $files = collect(File::files(config('services.transmission.downloads')))->filter(fn(SplFileInfo $file) => $file->getFilename() == $name);
             }
 
             $info = $production->getData($path);
@@ -89,7 +87,7 @@ class FilmController extends Controller
                         ->values()
                 ],
                 'files'        => $files->map(fn(SplFileInfo $file) => $file->getFilename())->values(),
-                'selectedFile' => $files->filter(fn(SplFileInfo $file) => $file->getPathname() == $path)->first()->getFilename()
+                'selectedFile' => $files->filter(fn(SplFileInfo $file) => Str::replace('\\', '/', $file->getPathname()) == $path)->first()->getFilename()
             ] : []
         ]);
     }

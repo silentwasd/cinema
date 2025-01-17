@@ -8,6 +8,7 @@ use App\Http\Resources\Production\FilmVideoVariantResource;
 use App\Jobs\ProcessFilmVideoVariantJob;
 use App\Models\Film;
 use App\Models\FilmVideoVariant;
+use App\Services\Production\VideoProducer;
 use App\Services\ProductionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
@@ -54,7 +55,7 @@ class FilmVideoVariantController extends Controller
                                   ->onQueue('ffmpeg');
     }
 
-    public function preview(Request $request, ProductionService $production, Film $film)
+    public function preview(Request $request, ProductionService $production, VideoProducer $producer, Film $film)
     {
         $data = $request->validate([
             'file'    => 'required|string',
@@ -68,17 +69,19 @@ class FilmVideoVariantController extends Controller
         if (!($path = $production->getPath($film->download, $data['file'])))
             abort(404, 'Path of downloaded film not found.');
 
-        $slashedPath = addslashes($path);
-
         $previewPath = sys_get_temp_dir() . '/' . Str::random(32) . '.mp4';
 
-        $dblBitrate = $data['bitrate'] * 2;
-
-        if ($data['has_hdr']) {
-            $result = Process::timeout(2 * 60)->run("ffmpeg -ss 00:05:00 -i \"$slashedPath\" -t 00:00:10 -map 0:0 -c:v libx264 -b:v:0 {$data['bitrate']} -vf \"zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p\" -crf {$data['crf']} -maxrate {$data['bitrate']} -bufsize $dblBitrate -s {$data['width']}x{$data['height']} -ac 2 $previewPath");
-        } else {
-            $result = Process::timeout(2 * 60)->run("ffmpeg -ss 00:05:00 -i \"$slashedPath\" -t 00:00:10 -map 0:0 -c:v libx264 -b:v:0 {$data['bitrate']} -crf {$data['crf']} -maxrate {$data['bitrate']} -bufsize $dblBitrate -s {$data['width']}x{$data['height']} -ac 2 $previewPath");
-        }
+        $result = $producer->input($path)
+                           ->codec(config('producer.video_codec'))
+                           ->bitrate($data['bitrate'])
+                           ->crf($data['crf'])
+                           ->resolution($data['width'], $data['height'])
+                           ->output($previewPath)
+                           ->timeout(60)
+                           ->start(minutes: 5)
+                           ->duration(seconds: 10)
+                           ->toSdr($data['has_hdr'])
+                           ->produce();
 
         if ($result->successful())
             return response()->download($previewPath);
