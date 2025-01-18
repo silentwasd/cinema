@@ -134,7 +134,7 @@ class FilmController extends Controller
 
     public function destroy(Film $film)
     {
-        if ($film->cinema_status == FilmCinemaStatus::Preparing)
+        if ($film->cinema_status == FilmCinemaStatus::Preparing || !$film->download_id)
             $film->cinema_status = FilmCinemaStatus::NotAvailable;
 
         $film->download_id = null;
