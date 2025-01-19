@@ -23,6 +23,7 @@ class FilmController extends Controller
                 ->with('download')
                 ->withCount(['videoVariants', 'audioVariants'])
                 ->orderByRaw("FIELD(cinema_status, 'preparing', 'published')")
+                ->latest('updated_at')
                 ->get()
         );
     }
