@@ -21,23 +21,26 @@ class FeedbackController extends Controller
 
     public function store(Request $request, Film $film)
     {
-        if ($request->user()->cannot('create', [Feedback::class, $film]))
-            abort(403);
-
         $data = $request->validate([
             'text'     => 'nullable|string|max:512',
-            'reaction' => 'nullable|integer|min:-1|max:1'
+            'reaction' => 'nullable|integer|min:-1|max:1',
+            'create'   => 'nullable|boolean'
         ]);
 
-        if (!($data['text'] ?? false) && ($data['reaction'] ?? 0) == 0)
-            abort(400, 'Укажите реакцию или напишите отзыв.');
+        if (!($data['create'] ?? false) && $request->user()->cannot('create', [Feedback::class, $film]))
+            abort(403);
 
         $user = $request->user();
 
-        $user->feedbacks()->create([
-            ...$data,
-            'film_id' => $film->id
-        ]);
+        if (!($data['create'] ?? false) && !($data['text'] ?? false) && ($data['reaction'] ?? 0) == 0) {
+            abort(400, 'Укажите реакцию или напишите отзыв.');
+        } elseif (($data['create'] ?? false) && $data['reaction'] == 0) {
+            $removed = $user->feedbacks()->where('film_id', $film->id)->whereNull('text')->delete();
+            if ($removed)
+                return;
+        }
+
+        $user->feedbacks()->updateOrCreate(['film_id' => $film->id], collect($data)->except('create')->toArray());
     }
 
     public function update(Request $request, Film $film, Feedback $feedback)

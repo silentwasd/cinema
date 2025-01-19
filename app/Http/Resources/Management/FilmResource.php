@@ -22,7 +22,6 @@ class FilmResource extends JsonResource
             'release_date' => $this->release_date?->format('Y-m-d'),
             'description'  => $this->description,
             'is_mine'      => $this->watchers()->where('watcher_id', $request->user()?->id)->exists(),
-            'has_rating'   => $this->ratings()->where('user_id', $request->user()?->id)->exists(),
             'can_edit'     => $this->when(
                 !!$request->user(),
                 fn() => ($request->user()->role == UserRole::Admin) ||
