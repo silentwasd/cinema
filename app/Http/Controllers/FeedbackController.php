@@ -25,7 +25,7 @@ class FeedbackController extends Controller
             abort(403);
 
         $data = $request->validate([
-            'text'     => 'nullable|string|max:255',
+            'text'     => 'nullable|string|max:512',
             'reaction' => 'nullable|integer|min:-1|max:1'
         ]);
 
@@ -46,7 +46,7 @@ class FeedbackController extends Controller
             abort(403);
 
         $data = $request->validate([
-            'text'     => 'nullable|string|max:255',
+            'text'     => 'nullable|string|max:512',
             'reaction' => 'nullable|integer|min:-1|max:1'
         ]);
 
