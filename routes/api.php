@@ -48,3 +48,4 @@ Route::apiResource('cinema/films', Cinema\FilmController::class)->only(['show'])
 Route::get('cinema/films/{film}/watch', [Cinema\FilmController::class, 'watch']);
 
 Route::apiResource('films', Public\FilmController::class)->only(['index']);
+Route::get('sitemap', [Public\SitemapController::class, 'index']);
