@@ -22,6 +22,7 @@ class ConvertRatingToFeedbackCommand extends Command
             ]);
 
             $feedback->created_at = $rating->created_at;
+            $feedback->updated_at = $rating->updated_at;
             $feedback->save();
         }
     }
