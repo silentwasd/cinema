@@ -59,4 +59,9 @@ class Film extends Model
     {
         return $this->hasMany(FilmVideoVariant::class);
     }
+
+    public function feedbacks(): HasMany
+    {
+        return $this->hasMany(Feedback::class);
+    }
 }

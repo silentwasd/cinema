@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Cinema;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Management;
 use App\Http\Controllers\Production;
 use App\Http\Controllers\Public;
@@ -50,3 +51,9 @@ Route::get('cinema/films/{film}/watch', [Cinema\FilmController::class, 'watch'])
 
 Route::apiResource('films', Public\FilmController::class)->only(['index']);
 Route::get('sitemap', [Public\SitemapController::class, 'index']);
+
+Route::prefix('films/{film}/feedback')->group(function () {
+    Route::get('', [FeedbackController::class, 'index']);
+    Route::post('', [FeedbackController::class, 'store'])->middleware('auth:sanctum');
+    Route::put('{feedback}', [FeedbackController::class, 'update'])->middleware('auth:sanctum');
+});
