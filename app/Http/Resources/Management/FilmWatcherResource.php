@@ -13,7 +13,7 @@ class FilmWatcherResource extends JsonResource
     {
         return [
             'id'     => $this->id,
-            'film'   => new FilmResource($this->film),
+            'film'   => new FilmResource($this->whenLoaded('film')),
             'status' => $this->status
         ];
     }

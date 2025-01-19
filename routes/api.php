@@ -18,6 +18,7 @@ Route::prefix('management')->group(function () {
         Route::apiResource('films.ratings', Management\RatingController::class)->except(['show']);
         Route::apiResource('films.persons', Management\FilmPersonController::class)->except(['show']);
         Route::apiResource('film-watchers', Management\FilmWatcherController::class)->except(['show']);
+        Route::get('film-watchers/by-film/{film}', [Management\FilmWatcherController::class, 'byFilm']);
         Route::apiResource('people', Management\PersonController::class)->except(['show']);
     });
 

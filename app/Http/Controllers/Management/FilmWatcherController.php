@@ -87,6 +87,16 @@ class FilmWatcherController extends Controller
         $request->user()->films()->create($data);
     }
 
+    public function byFilm(Request $request, Film $film)
+    {
+        $watcher = $request->user()->films()->where('film_id', $film->id)->first();
+
+        if (!$watcher)
+            abort(404);
+
+        return new FilmWatcherResource($watcher);
+    }
+
     public function update(Request $request, FilmWatcher $filmWatcher)
     {
         $data = $request->validate([
