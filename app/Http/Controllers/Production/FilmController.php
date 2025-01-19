@@ -44,14 +44,7 @@ class FilmController extends Controller
                 abort(404, 'Path of downloaded film not found.');
 
             if (File::isDirectory($path)) {
-                $files = collect(File::allFiles($path))
-                    ->filter(fn(SplFileInfo $file) => in_array($file->getExtension(), [
-                        'mp4',
-                        'mkv',
-                        'mov',
-                        'avi',
-                        'm2ts'
-                    ]));
+                $files = $production->getVideos($path);
 
                 $path = $files->filter(fn(SplFileInfo $file) => ($data['file'] ?? false) ? $file->getFilename() == $data['file'] : true)
                               ->first()
@@ -77,10 +70,10 @@ class FilmController extends Controller
                         'duration' => $info['format']['duration'] ?? 0
                     ],
                     'audio' => collect($info['streams'])
-                        ->filter(fn($stream) => $stream['codec_type'] == 'audio' && (isset($stream['bit_rate']) || isset($stream['tags']['BPS'])))
+                        ->filter(fn($stream) => $stream['codec_type'] == 'audio')
                         ->map(fn($stream) => [
                             'index'   => $stream['index'],
-                            'bitrate' => $stream['bit_rate'] ?? $stream['tags']['BPS'],
+                            'bitrate' => $stream['bit_rate'] ?? $stream['tags']['BPS'] ?? 0,
                             ...isset($stream['tags']['title']) ? ['title' => $stream['tags']['title']] : [],
                             ...isset($stream['tags']['language']) ? ['language' => $stream['tags']['language']] : [],
                         ])
