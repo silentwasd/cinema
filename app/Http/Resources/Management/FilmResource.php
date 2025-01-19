@@ -19,7 +19,7 @@ class FilmResource extends JsonResource
             'name'         => $this->name,
             'format'       => $this->format,
             'cover'        => $this->cover,
-            'release_date' => $this->release_date?->format('d.m.Y'),
+            'release_date' => $this->release_date,
             'description'  => $this->description,
             'is_mine'      => $this->watchers()->where('watcher_id', $request->user()?->id)->exists(),
             'has_rating'   => $this->ratings()->where('user_id', $request->user()?->id)->exists(),
