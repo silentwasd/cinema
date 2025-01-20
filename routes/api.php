@@ -51,6 +51,7 @@ Route::get('cinema/films/{film}/watch', [Cinema\FilmController::class, 'watch'])
 
 Route::apiResource('films', Public\FilmController::class)->only(['index']);
 Route::get('sitemap', [Public\SitemapController::class, 'index']);
+Route::get('speed', [Public\SpeedController::class, 'index']);
 
 Route::prefix('films/{film}/feedback')->group(function () {
     Route::get('', [FeedbackController::class, 'index']);
