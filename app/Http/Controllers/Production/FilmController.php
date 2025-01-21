@@ -71,7 +71,7 @@ class FilmController extends Controller
                         'duration' => $info['format']['duration'] ?? 0
                     ],
                     'audio' => collect($info['streams'])
-                        ->filter(fn($stream) => $stream['codec_type'] == 'audio')
+                        ->filter(fn($stream) => ($stream['codec_type'] ?? '') == 'audio')
                         ->map(fn($stream) => [
                             'index'   => $stream['index'],
                             'bitrate' => $stream['bit_rate'] ?? $stream['tags']['BPS'] ?? 0,
