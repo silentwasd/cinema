@@ -33,7 +33,9 @@ class FilmResource extends JsonResource
             ),
             'can_watch'    => $this->cinema_status == FilmCinemaStatus::Published,
             'ratings'      => RatingResource::collection($this->whenLoaded('ratings')),
-            'people'       => FilmPersonResource::collection($this->whenLoaded('people'))
+            'people'       => FilmPersonResource::collection($this->whenLoaded('people')),
+            'genres'       => GenreResource::collection($this->whenLoaded('genres')),
+            'countries'    => CountryResource::collection($this->whenLoaded('countries'))
         ];
     }
 }

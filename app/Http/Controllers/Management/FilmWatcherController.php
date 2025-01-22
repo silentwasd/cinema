@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Management;
 
+use App\Enums\FilmFormat;
 use App\Enums\FilmWatchStatus;
+use App\Enums\PersonRole;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Management\FilmWatcherResource;
 use App\Models\Film;
@@ -29,7 +31,13 @@ class FilmWatcherController extends Controller
                 'film.format',
                 'film.release_date'
             ]),
-            'watch_status' => ['nullable', Rule::enum(FilmWatchStatus::class)]
+            'watch_status' => ['nullable', Rule::enum(FilmWatchStatus::class)],
+            'reaction'     => ['nullable', 'integer', 'min:-1', 'max:1'],
+            'format'       => ['nullable', Rule::enum(FilmFormat::class)],
+            'directors'    => ['nullable', 'array', 'exists:people,id'],
+            'actors'       => ['nullable', 'array', 'exists:people,id'],
+            'genres'       => ['nullable', 'array', 'exists:genres,id'],
+            'countries'    => ['nullable', 'array', 'exists:countries,id']
         ]);
 
         $query = $request->user()
@@ -42,6 +50,40 @@ class FilmWatcherController extends Controller
                 ->whereHas('film', fn(Builder $has) => $has->where('name', 'LIKE', '%' . $data['name'] . '%'))
             )->when($data['watch_status'] ?? false, fn(Builder $when) => $when
                 ->where('status', $data['watch_status'])
+            )->when(isset($data['reaction']) && $data['reaction'] != 0, fn(Builder $when) => $when
+                ->whereHas('film.feedbacks', fn(Builder $has) => $has
+                    ->where('feedback.user_id', request()->user()->id)
+                    ->where('feedback.reaction', $data['reaction'])
+                )
+            )->when(isset($data['reaction']) && $data['reaction'] == 0, fn(Builder $when) => $when
+                ->where(fn(Builder $where) => $where
+                    ->whereDoesntHave('film.feedbacks', fn(Builder $has) => $has
+                        ->where('feedback.user_id', request()->user()->id)
+                    )->orWhereHas('film.feedbacks', fn(Builder $has) => $has
+                        ->where('feedback.user_id', request()->user()->id)
+                        ->where('feedback.reaction', 0)
+                    )
+                )
+            )->when($data['format'] ?? false, fn(Builder $when) => $when
+                ->whereHas('film', fn(Builder $has) => $has->where('format', $data['format']))
+            )->when($data['directors'] ?? false, fn(Builder $when) => $when
+                ->whereHas('film.people', fn(Builder $has) => $has
+                    ->whereIn('film_people.person_id', $data['directors'])
+                    ->where('role', PersonRole::Director)
+                )
+            )->when($data['actors'] ?? false, fn(Builder $when) => $when
+                ->whereHas('film.people', fn(Builder $has) => $has
+                    ->whereIn('film_people.person_id', $data['actors'])
+                    ->where('role', PersonRole::Actor)
+                )
+            )->when($data['genres'] ?? false, fn(Builder $when) => $when
+                ->whereHas('film.genres', fn(Builder $has) => $has
+                    ->whereIn('film_genre.genre_id', $data['genres'])
+                )
+            )->when($data['countries'] ?? false, fn(Builder $when) => $when
+                ->whereHas('film.countries', fn(Builder $has) => $has
+                    ->whereIn('country_film.country_id', $data['countries'])
+                )
             );
 
         $this->applySort($data, $query);

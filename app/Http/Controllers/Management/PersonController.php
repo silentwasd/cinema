@@ -24,9 +24,11 @@ class PersonController extends Controller
             ...$this->checkPage(),
             ...$this->checkSort([
                 'id',
-                'name'
+                'name',
+                'films_count'
             ]),
-            'role' => ['nullable', Rule::enum(PersonRole::class)]
+            'role'      => ['nullable', Rule::enum(PersonRole::class)],
+            'countries' => ['nullable', 'array', 'exists:countries,id']
         ]);
 
         $query = Person::query()
@@ -34,7 +36,12 @@ class PersonController extends Controller
                            ->whereHas('films', fn(Builder $has) => $has
                                ->where('film_people.role', $data['role'])
                            )
-                       );
+                       )
+                       ->when($data['countries'] ?? false, fn(Builder $when) => $when
+                           ->whereIn('country_id', $data['countries'])
+                       )
+                       ->with(['country', 'films'])
+                       ->withCount('films');
 
         $this->applySearch($data, $query);
         $this->applySort($data, $query);
@@ -45,8 +52,9 @@ class PersonController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'  => 'required|string|max:255',
-            'photo' => 'nullable|image|max:10240'
+            'name'       => 'required|string|max:255',
+            'photo'      => 'nullable|image|max:10240',
+            'country_id' => 'nullable|exists:countries,id'
         ]);
 
         if ($request->hasFile('photo')) {
@@ -62,8 +70,9 @@ class PersonController extends Controller
     public function update(Request $request, Person $person)
     {
         $data = $request->validate([
-            'name'  => 'required|string|max:255',
-            'photo' => 'nullable|image|max:10240'
+            'name'       => 'required|string|max:255',
+            'photo'      => 'nullable|image|max:10240',
+            'country_id' => 'nullable|exists:countries,id'
         ]);
 
         if ($request->hasFile('photo')) {
