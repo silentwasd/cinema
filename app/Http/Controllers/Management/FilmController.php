@@ -65,6 +65,8 @@ class FilmController extends Controller
         $this->applySearch($data, $query);
         $this->applySort($data, $query);
 
+        $query->orderBy('id');
+
         return FilmResource::collection($this->applyPagination($data, $query));
     }
 

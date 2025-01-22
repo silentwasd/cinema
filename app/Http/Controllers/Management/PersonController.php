@@ -46,6 +46,8 @@ class PersonController extends Controller
         $this->applySearch($data, $query);
         $this->applySort($data, $query);
 
+        $query->orderBy('id');
+
         return PersonResource::collection($this->applyPagination($data, $query));
     }
 

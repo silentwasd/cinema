@@ -88,6 +88,8 @@ class FilmWatcherController extends Controller
 
         $this->applySort($data, $query);
 
+        $query->orderBy('id');
+
         return FilmWatcherResource::collection($this->applyPagination($data, $query));
     }
 
