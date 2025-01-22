@@ -95,7 +95,7 @@ class FilmVideoVariantController extends Controller
 
         $content = Storage::disk('public')->get($m3u8);
 
-        if (!preg_match_all("/(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}_\d{3}\.ts)/", $content, $matches))
+        if (!preg_match_all("/(\w{8}-\w{4}-\w{4}-\w{4}-\w{12}_\d{3,4}\.ts)/", $content, $matches))
             abort(404, "Can't parse m3u8 file.");
 
         foreach ($matches[1] as $match) {
