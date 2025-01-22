@@ -22,13 +22,16 @@ Route::prefix('management')->group(function () {
         Route::get('film-watchers/by-film/{film}', [Management\FilmWatcherController::class, 'byFilm']);
         Route::apiResource('people', Management\PersonController::class)->except(['show']);
 
+        Route::get('genres', [Management\GenreController::class, 'index']);
+        Route::get('countries', [Management\CountryController::class, 'index']);
+
         Route::middleware(AdminMiddleware::class)
              ->apiResource('genres', Management\GenreController::class)
-             ->except(['show']);
+             ->except(['show', 'index']);
 
         Route::middleware(AdminMiddleware::class)
              ->apiResource('countries', Management\CountryController::class)
-             ->except(['show']);
+             ->except(['show', 'index']);
     });
 
     Route::apiResource('films', Management\FilmController::class)->only(['show']);
