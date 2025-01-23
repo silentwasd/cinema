@@ -46,6 +46,9 @@ class PersonController extends Controller
                            ->where('name', 'LIKE', '%' . $data['name'] . '%')
                            ->orWhere('original_name', 'LIKE', '%' . $data['name'] . '%')
                        )
+                       ->when($data['model_id'] ?? [], fn(Builder $when) => $when
+                           ->whereIn('id', is_array($data['model_id']) ? $data['model_id'] : [$data['model_id']], ($data['name'] ?? false) ? 'OR' : 'AND')
+                       )
                        ->with(['country', 'films'])
                        ->withCount('films');
 
