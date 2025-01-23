@@ -24,6 +24,7 @@ Route::prefix('management')->group(function () {
 
         Route::get('genres', [Management\GenreController::class, 'index']);
         Route::get('countries', [Management\CountryController::class, 'index']);
+        Route::get('tags', [Management\TagController::class, 'index']);
 
         Route::middleware(AdminMiddleware::class)
              ->apiResource('genres', Management\GenreController::class)
@@ -31,6 +32,10 @@ Route::prefix('management')->group(function () {
 
         Route::middleware(AdminMiddleware::class)
              ->apiResource('countries', Management\CountryController::class)
+             ->except(['show', 'index']);
+
+        Route::middleware(AdminMiddleware::class)
+             ->apiResource('tags', Management\TagController::class)
              ->except(['show', 'index']);
     });
 

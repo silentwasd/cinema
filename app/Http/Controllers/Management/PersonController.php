@@ -25,7 +25,9 @@ class PersonController extends Controller
             ...$this->checkSort([
                 'id',
                 'name',
-                'films_count'
+                'films_count',
+                'birth_date',
+                'death_date'
             ]),
             'role'      => ['nullable', Rule::enum(PersonRole::class)],
             'countries' => ['nullable', 'array', 'exists:countries,id']
@@ -40,10 +42,13 @@ class PersonController extends Controller
                        ->when($data['countries'] ?? false, fn(Builder $when) => $when
                            ->whereIn('country_id', $data['countries'])
                        )
+                       ->when($data['name'] ?? false, fn(Builder $when) => $when
+                           ->where('name', 'LIKE', '%' . $data['name'] . '%')
+                           ->orWhere('original_name', 'LIKE', '%' . $data['name'] . '%')
+                       )
                        ->with(['country', 'films'])
                        ->withCount('films');
 
-        $this->applySearch($data, $query);
         $this->applySort($data, $query);
 
         $query->orderBy('id');
@@ -54,9 +59,12 @@ class PersonController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'       => 'required|string|max:255',
-            'photo'      => 'nullable|image|max:10240',
-            'country_id' => 'nullable|exists:countries,id'
+            'name'          => 'required|string|max:255',
+            'original_name' => 'nullable|string|max:255',
+            'birth_date'    => 'nullable|date',
+            'death_date'    => 'nullable|date',
+            'photo'         => 'nullable|image|max:10240',
+            'country_id'    => 'nullable|exists:countries,id'
         ]);
 
         if ($request->hasFile('photo')) {
@@ -72,9 +80,12 @@ class PersonController extends Controller
     public function update(Request $request, Person $person)
     {
         $data = $request->validate([
-            'name'       => 'required|string|max:255',
-            'photo'      => 'nullable|image|max:10240',
-            'country_id' => 'nullable|exists:countries,id'
+            'name'          => 'required|string|max:255',
+            'original_name' => 'nullable|string|max:255',
+            'birth_date'    => 'nullable|date',
+            'death_date'    => 'nullable|date',
+            'photo'         => 'nullable|image|max:10240',
+            'country_id'    => 'nullable|exists:countries,id'
         ]);
 
         if ($request->hasFile('photo')) {

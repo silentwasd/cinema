@@ -33,11 +33,12 @@ class FilmController extends Controller
             'directors' => ['nullable', 'array', 'exists:people,id'],
             'actors'    => ['nullable', 'array', 'exists:people,id'],
             'genres'    => ['nullable', 'array', 'exists:genres,id'],
-            'countries' => ['nullable', 'array', 'exists:countries,id']
+            'countries' => ['nullable', 'array', 'exists:countries,id'],
+            'tags'      => ['nullable', 'array', 'exists:tags,id']
         ]);
 
         $query = Film::query()
-                     ->with(['people', 'people.person', 'genres', 'countries']);
+                     ->with(['people', 'people.person', 'genres', 'countries', 'tags']);
 
         $query
             ->when($data['format'] ?? false, fn(Builder $when) => $when
@@ -60,9 +61,15 @@ class FilmController extends Controller
                 ->whereHas('countries', fn(Builder $has) => $has
                     ->whereIn('country_film.country_id', $data['countries'])
                 )
+            )->when($data['name'] ?? false, fn(Builder $when) => $when
+                ->where('name', 'LIKE', '%' . $data['name'] . '%')
+                ->orWhere('original_name', 'LIKE', '%' . $data['name'] . '%')
+            )->when($data['tags'] ?? false, fn(Builder $when) => $when
+                ->whereHas('tags', fn(Builder $has) => $has
+                    ->whereIn('film_tag.tag_id', $data['tags'])
+                )
             );
 
-        $this->applySearch($data, $query);
         $this->applySort($data, $query);
 
         $query->orderBy('id');
@@ -73,13 +80,15 @@ class FilmController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'format'       => ['required', Rule::enum(FilmFormat::class)],
-            'cover'        => 'nullable|image|max:10240',
-            'release_date' => 'nullable|date',
-            'description'  => 'nullable|string|max:65536',
-            'genres'       => 'nullable|array|exists:genres,id',
-            'countries'    => 'nullable|array|exists:countries,id'
+            'name'          => 'required|string|max:255',
+            'original_name' => 'nullable|string|max:255',
+            'format'        => ['required', Rule::enum(FilmFormat::class)],
+            'cover'         => 'nullable|image|max:10240',
+            'release_date'  => 'nullable|date',
+            'description'   => 'nullable|string|max:65536',
+            'genres'        => 'nullable|array|exists:genres,id',
+            'countries'     => 'nullable|array|exists:countries,id',
+            'tags'          => 'nullable|array|exists:tags,id'
         ]);
 
         if ($request->hasFile('cover')) {
@@ -96,11 +105,14 @@ class FilmController extends Controller
 
         if ($data['countries'] ?? false)
             $film->countries()->sync($data['countries']);
+
+        if ($data['tags'] ?? false)
+            $film->tags()->sync($data['tags']);
     }
 
     public function show(Film $film)
     {
-        $film->load(['ratings', 'people', 'people.person', 'genres', 'countries']);
+        $film->load(['ratings', 'people', 'people.person', 'genres', 'countries', 'tags']);
 
         return new FilmResource($film);
     }
@@ -108,13 +120,15 @@ class FilmController extends Controller
     public function update(Request $request, Film $film)
     {
         $data = $request->validate([
-            'name'         => 'required|string|max:255',
-            'format'       => ['required', Rule::enum(FilmFormat::class)],
-            'cover'        => 'nullable|image|max:10240',
-            'release_date' => 'nullable|date',
-            'description'  => 'nullable|string|max:65536',
-            'genres'       => 'nullable|array|exists:genres,id',
-            'countries'    => 'nullable|array|exists:countries,id'
+            'name'          => 'required|string|max:255',
+            'original_name' => 'nullable|string|max:255',
+            'format'        => ['required', Rule::enum(FilmFormat::class)],
+            'cover'         => 'nullable|image|max:10240',
+            'release_date'  => 'nullable|date',
+            'description'   => 'nullable|string|max:65536',
+            'genres'        => 'nullable|array|exists:genres,id',
+            'countries'     => 'nullable|array|exists:countries,id',
+            'tags'          => 'nullable|array|exists:tags,id'
         ]);
 
         if ($request->hasFile('cover')) {
@@ -126,6 +140,7 @@ class FilmController extends Controller
         $film->fill($data);
         $film->genres()->sync($data['genres'] ?? []);
         $film->countries()->sync($data['countries'] ?? []);
+        $film->tags()->sync($data['tags'] ?? []);
         $film->save();
     }
 

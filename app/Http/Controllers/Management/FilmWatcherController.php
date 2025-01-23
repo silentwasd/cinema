@@ -37,7 +37,8 @@ class FilmWatcherController extends Controller
             'directors'    => ['nullable', 'array', 'exists:people,id'],
             'actors'       => ['nullable', 'array', 'exists:people,id'],
             'genres'       => ['nullable', 'array', 'exists:genres,id'],
-            'countries'    => ['nullable', 'array', 'exists:countries,id']
+            'countries'    => ['nullable', 'array', 'exists:countries,id'],
+            'tags'         => ['nullable', 'array', 'exists:tags,id']
         ]);
 
         $query = $request->user()
@@ -47,7 +48,10 @@ class FilmWatcherController extends Controller
 
         $query
             ->when($data['name'] ?? false, fn(Builder $when) => $when
-                ->whereHas('film', fn(Builder $has) => $has->where('name', 'LIKE', '%' . $data['name'] . '%'))
+                ->whereHas('film', fn(Builder $has) => $has
+                    ->where('name', 'LIKE', '%' . $data['name'] . '%')
+                    ->orWhere('original_name', 'LIKE', '%' . $data['name'] . '%')
+                )
             )->when($data['watch_status'] ?? false, fn(Builder $when) => $when
                 ->where('status', $data['watch_status'])
             )->when(isset($data['reaction']) && $data['reaction'] != 0, fn(Builder $when) => $when
@@ -83,6 +87,10 @@ class FilmWatcherController extends Controller
             )->when($data['countries'] ?? false, fn(Builder $when) => $when
                 ->whereHas('film.countries', fn(Builder $has) => $has
                     ->whereIn('country_film.country_id', $data['countries'])
+                )
+            )->when($data['tags'] ?? false, fn(Builder $when) => $when
+                ->whereHas('film.tags', fn(Builder $has) => $has
+                    ->whereIn('film_tag.tag_id', $data['tags'])
                 )
             );
 

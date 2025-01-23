@@ -13,6 +13,7 @@ class Film extends Model
 {
     protected $fillable = [
         'name',
+        'original_name',
         'cover',
         'release_date',
         'description',
@@ -74,5 +75,10 @@ class Film extends Model
     public function countries(): BelongsToMany
     {
         return $this->belongsToMany(Country::class);
+    }
+
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class);
     }
 }

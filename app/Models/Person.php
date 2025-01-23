@@ -10,9 +10,17 @@ class Person extends Model
 {
     protected $fillable = [
         'name',
+        'original_name',
+        'birth_date',
+        'death_date',
         'photo',
         'author_id',
         'country_id'
+    ];
+
+    protected $casts = [
+        'birth_date' => 'date',
+        'death_date' => 'date'
     ];
 
     public function films(): HasMany
