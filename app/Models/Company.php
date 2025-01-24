@@ -16,6 +16,8 @@ class Company extends Model
 
     public function films(): BelongsToMany
     {
-        return $this->belongsToMany(Film::class);
+        return $this->belongsToMany(Film::class)
+                    ->orderByDesc('release_date')
+                    ->orderBy('id');
     }
 }
