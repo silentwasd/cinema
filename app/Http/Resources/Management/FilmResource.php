@@ -36,6 +36,7 @@ class FilmResource extends JsonResource
             'ratings'       => RatingResource::collection($this->whenLoaded('ratings')),
             'people'        => FilmPersonResource::collection($this->whenLoaded('people')),
             'genres'        => GenreResource::collection($this->whenLoaded('genres')),
+            'companies'     => CompanyResource::collection($this->whenLoaded('companies')),
             'countries'     => CountryResource::collection($this->whenLoaded('countries')),
             'tags'          => TagResource::collection($this->whenLoaded('tags'))
         ];

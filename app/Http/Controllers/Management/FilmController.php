@@ -38,7 +38,7 @@ class FilmController extends Controller
         ]);
 
         $query = Film::query()
-                     ->with(['people', 'people.person', 'genres', 'countries', 'tags']);
+                     ->with(['people', 'people.person', 'genres', 'countries', 'tags', 'companies']);
 
         $query
             ->when($data['format'] ?? false, fn(Builder $when) => $when
@@ -88,7 +88,8 @@ class FilmController extends Controller
             'description'   => 'nullable|string|max:65536',
             'genres'        => 'nullable|array|exists:genres,id',
             'countries'     => 'nullable|array|exists:countries,id',
-            'tags'          => 'nullable|array|exists:tags,id'
+            'tags'          => 'nullable|array|exists:tags,id',
+            'companies'     => 'nullable|array|exists:companies,id'
         ]);
 
         if ($request->hasFile('cover')) {
@@ -108,11 +109,14 @@ class FilmController extends Controller
 
         if ($data['tags'] ?? false)
             $film->tags()->sync($data['tags']);
+
+        if ($data['companies'] ?? false)
+            $film->companies()->sync($data['companies']);
     }
 
     public function show(Film $film)
     {
-        $film->load(['ratings', 'people', 'people.person', 'genres', 'countries', 'tags']);
+        $film->load(['ratings', 'people', 'people.person', 'genres', 'countries', 'tags', 'companies']);
 
         return new FilmResource($film);
     }
@@ -128,7 +132,8 @@ class FilmController extends Controller
             'description'   => 'nullable|string|max:65536',
             'genres'        => 'nullable|array|exists:genres,id',
             'countries'     => 'nullable|array|exists:countries,id',
-            'tags'          => 'nullable|array|exists:tags,id'
+            'tags'          => 'nullable|array|exists:tags,id',
+            'companies'     => 'nullable|array|exists:companies,id'
         ]);
 
         if ($request->hasFile('cover')) {
@@ -141,6 +146,7 @@ class FilmController extends Controller
         $film->genres()->sync($data['genres'] ?? []);
         $film->countries()->sync($data['countries'] ?? []);
         $film->tags()->sync($data['tags'] ?? []);
+        $film->companies()->sync($data['companies'] ?? []);
         $film->save();
     }
 
