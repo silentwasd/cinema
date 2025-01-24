@@ -18,7 +18,8 @@ class FilmPersonResource extends JsonResource
             'role'         => $this->role,
             'role_details' => $this->role_details,
             'order_id'     => $this->order_id,
-            'person'       => new PersonResource($this->whenLoaded('person'))
+            'person'       => new PersonResource($this->whenLoaded('person')),
+            'film'         => new FilmResource($this->whenLoaded('film'))
         ];
     }
 }

@@ -80,6 +80,14 @@ class PersonController extends Controller
         ]);
     }
 
+    public function show(Person $person)
+    {
+        $person->load(['films', 'films.film', 'country'])
+               ->loadCount('films');
+
+        return new PersonResource($person);
+    }
+
     public function update(Request $request, Person $person)
     {
         $data = $request->validate([

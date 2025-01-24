@@ -22,7 +22,8 @@ class PersonResource extends JsonResource
             'can_edit'      => $request->user() && ($request->user()->role == UserRole::Admin || $this->author_id == $request->user()->id),
             'country'       => new CountryResource($this->whenLoaded('country')),
             'films_count'   => $this->whenCounted('films'),
-            'roles'         => $this->whenLoaded('films', fn() => $this->films->pluck('role')->unique()->values())
+            'roles'         => $this->whenLoaded('films', fn() => $this->films->pluck('role')->unique()->values()),
+            'films'         => FilmPersonResource::collection($this->whenLoaded('films'))
         ];
     }
 }
