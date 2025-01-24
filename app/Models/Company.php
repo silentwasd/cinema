@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Company extends Model
 {
@@ -12,4 +13,9 @@ class Company extends Model
         'link',
         'author_id'
     ];
+
+    public function films(): BelongsToMany
+    {
+        return $this->belongsToMany(Film::class);
+    }
 }

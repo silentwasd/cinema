@@ -17,7 +17,8 @@ class CompanyResource extends JsonResource
             'name'        => $this->name,
             'description' => $this->description,
             'link'        => $this->link,
-            'can_edit'    => $request->user() && ($request->user()->role == UserRole::Admin || $this->author_id == $request->user()->id)
+            'can_edit'    => $request->user() && ($request->user()->role == UserRole::Admin || $this->author_id == $request->user()->id),
+            'films'       => FilmResource::collection($this->whenLoaded('films'))
         ];
     }
 }

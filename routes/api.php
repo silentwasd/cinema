@@ -42,6 +42,7 @@ Route::prefix('management')->group(function () {
 
     Route::apiResource('films', Management\FilmController::class)->only(['show']);
     Route::apiResource('people', Management\PersonController::class)->only(['show']);
+    Route::apiResource('companies', Management\CompanyController::class)->only(['show']);
 });
 
 Route::middleware(['auth:sanctum', AdminMiddleware::class])->prefix('production')->group(function () {
