@@ -52,6 +52,20 @@ class DownloadController extends Controller
         $film->save();
     }
 
+    public function start(Download $download)
+    {
+        $transmission = new Transmission();
+        $torrent      = collect($transmission->all())->first(fn($torrent) => $torrent->getHash() == $download->hash);
+        $transmission->start($torrent);
+    }
+
+    public function stop(Download $download)
+    {
+        $transmission = new Transmission();
+        $torrent      = collect($transmission->all())->first(fn($torrent) => $torrent->getHash() == $download->hash);
+        $transmission->stop($torrent);
+    }
+
     public function destroy(Download $download)
     {
         $name = $download->name;

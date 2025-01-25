@@ -46,7 +46,9 @@ Route::prefix('management')->group(function () {
 });
 
 Route::middleware(['auth:sanctum', AdminMiddleware::class])->prefix('production')->group(function () {
-    Route::apiResource('downloads', Production\DownloadController::class);
+    Route::apiResource('downloads', Production\DownloadController::class)->except(['show']);
+    Route::post('downloads/{download}/stop', [Production\DownloadController::class, 'stop']);
+    Route::post('downloads/{download}/start', [Production\DownloadController::class, 'start']);
 
     Route::apiResource('films', Production\FilmController::class);
     Route::get('films/{film}/watch', [Production\FilmController::class, 'watch']);
