@@ -18,6 +18,7 @@ class PersonResource extends JsonResource
             'original_name' => $this->original_name,
             'birth_date'    => $this->birth_date?->format('Y-m-d'),
             'death_date'    => $this->death_date?->format('Y-m-d'),
+            'sex'           => $this->sex,
             'photo'         => $this->photo,
             'can_edit'      => $request->user() && ($request->user()->role == UserRole::Admin || $this->author_id == $request->user()->id),
             'country'       => new CountryResource($this->whenLoaded('country')),

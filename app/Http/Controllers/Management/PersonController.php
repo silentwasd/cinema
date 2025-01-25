@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Management;
 
 use App\Enums\PersonRole;
+use App\Enums\PersonSex;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Management\PersonResource;
 use App\Models\Person;
@@ -66,6 +67,7 @@ class PersonController extends Controller
             'original_name' => 'nullable|string|max:255',
             'birth_date'    => 'nullable|date',
             'death_date'    => 'nullable|date',
+            'sex'           => ['nullable', Rule::enum(PersonSex::class)],
             'photo'         => 'nullable|image|max:10240',
             'country_id'    => 'nullable|exists:countries,id'
         ]);
@@ -95,6 +97,7 @@ class PersonController extends Controller
             'original_name' => 'nullable|string|max:255',
             'birth_date'    => 'nullable|date',
             'death_date'    => 'nullable|date',
+            'sex'           => ['nullable', Rule::enum(PersonSex::class)],
             'photo'         => 'nullable|image|max:10240',
             'country_id'    => 'nullable|exists:countries,id'
         ]);

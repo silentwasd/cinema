@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PersonSex;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +14,7 @@ class Person extends Model
         'original_name',
         'birth_date',
         'death_date',
+        'sex',
         'photo',
         'author_id',
         'country_id'
@@ -20,7 +22,8 @@ class Person extends Model
 
     protected $casts = [
         'birth_date' => 'date',
-        'death_date' => 'date'
+        'death_date' => 'date',
+        'sex'        => PersonSex::class
     ];
 
     public function films(): HasMany
