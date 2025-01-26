@@ -34,8 +34,7 @@ class FilmWatcherController extends Controller
             'watch_status' => ['nullable', Rule::enum(FilmWatchStatus::class)],
             'reaction'     => ['nullable', 'integer', 'min:-1', 'max:1'],
             'format'       => ['nullable', Rule::enum(FilmFormat::class)],
-            'directors'    => ['nullable', 'array', 'exists:people,id'],
-            'actors'       => ['nullable', 'array', 'exists:people,id'],
+            'people'       => ['nullable', 'array', 'exists:people,id'],
             'genres'       => ['nullable', 'array', 'exists:genres,id'],
             'countries'    => ['nullable', 'array', 'exists:countries,id'],
             'tags'         => ['nullable', 'array', 'exists:tags,id']
@@ -70,15 +69,9 @@ class FilmWatcherController extends Controller
                 )
             )->when($data['format'] ?? false, fn(Builder $when) => $when
                 ->whereHas('film', fn(Builder $has) => $has->where('format', $data['format']))
-            )->when($data['directors'] ?? false, fn(Builder $when) => $when
+            )->when($data['people'] ?? false, fn(Builder $when) => $when
                 ->whereHas('film.people', fn(Builder $has) => $has
-                    ->whereIn('film_people.person_id', $data['directors'])
-                    ->where('role', PersonRole::Director)
-                )
-            )->when($data['actors'] ?? false, fn(Builder $when) => $when
-                ->whereHas('film.people', fn(Builder $has) => $has
-                    ->whereIn('film_people.person_id', $data['actors'])
-                    ->where('role', PersonRole::Actor)
+                    ->whereIn('film_people.person_id', $data['people'])
                 )
             )->when($data['genres'] ?? false, fn(Builder $when) => $when
                 ->whereHas('film.genres', fn(Builder $has) => $has

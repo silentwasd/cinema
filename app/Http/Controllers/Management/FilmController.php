@@ -30,8 +30,7 @@ class FilmController extends Controller
                 'release_date'
             ]),
             'format'    => ['nullable', Rule::enum(FilmFormat::class)],
-            'directors' => ['nullable', 'array', 'exists:people,id'],
-            'actors'    => ['nullable', 'array', 'exists:people,id'],
+            'people'    => ['nullable', 'array', 'exists:people,id'],
             'genres'    => ['nullable', 'array', 'exists:genres,id'],
             'countries' => ['nullable', 'array', 'exists:countries,id'],
             'tags'      => ['nullable', 'array', 'exists:tags,id']
@@ -43,15 +42,9 @@ class FilmController extends Controller
         $query
             ->when($data['format'] ?? false, fn(Builder $when) => $when
                 ->where('format', $data['format'])
-            )->when($data['directors'] ?? false, fn(Builder $when) => $when
+            )->when($data['people'] ?? false, fn(Builder $when) => $when
                 ->whereHas('people', fn(Builder $has) => $has
-                    ->whereIn('film_people.person_id', $data['directors'])
-                    ->where('role', PersonRole::Director)
-                )
-            )->when($data['actors'] ?? false, fn(Builder $when) => $when
-                ->whereHas('people', fn(Builder $has) => $has
-                    ->whereIn('film_people.person_id', $data['actors'])
-                    ->where('role', PersonRole::Actor)
+                    ->whereIn('film_people.person_id', $data['people'])
                 )
             )->when($data['genres'] ?? false, fn(Builder $when) => $when
                 ->whereHas('genres', fn(Builder $has) => $has
