@@ -32,27 +32,4 @@ class GenreController extends Controller
 
         return GenreResource::collection($this->applyPagination($data, $query));
     }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-
-        Genre::create($data);
-    }
-
-    public function update(Request $request, Genre $genre)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-
-        $genre->update($data);
-    }
-
-    public function destroy(Genre $genre)
-    {
-        $genre->delete();
-    }
 }

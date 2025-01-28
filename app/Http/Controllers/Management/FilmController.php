@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Management;
 
 use App\Enums\FilmFormat;
-use App\Enums\PersonRole;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Management\FilmResource;
 use App\Models\Film;
@@ -70,81 +69,10 @@ class FilmController extends Controller
         return FilmResource::collection($this->applyPagination($data, $query));
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name'          => 'required|string|max:255',
-            'original_name' => 'nullable|string|max:255',
-            'format'        => ['required', Rule::enum(FilmFormat::class)],
-            'cover'         => 'nullable|image|max:10240',
-            'release_date'  => 'nullable|date',
-            'description'   => 'nullable|string|max:65536',
-            'genres'        => 'nullable|array|exists:genres,id',
-            'countries'     => 'nullable|array|exists:countries,id',
-            'tags'          => 'nullable|array|exists:tags,id',
-            'companies'     => 'nullable|array|exists:companies,id'
-        ]);
-
-        if ($request->hasFile('cover')) {
-            $data['cover'] = $request->file('cover')->store('films', 'public');
-        }
-
-        $film = Film::create([
-            ...$data,
-            'author_id' => $request->user()->id
-        ]);
-
-        if ($data['genres'] ?? false)
-            $film->genres()->sync($data['genres']);
-
-        if ($data['countries'] ?? false)
-            $film->countries()->sync($data['countries']);
-
-        if ($data['tags'] ?? false)
-            $film->tags()->sync($data['tags']);
-
-        if ($data['companies'] ?? false)
-            $film->companies()->sync($data['companies']);
-    }
-
     public function show(Film $film)
     {
         $film->load(['ratings', 'people', 'people.person', 'genres', 'countries', 'tags', 'companies']);
 
         return new FilmResource($film);
-    }
-
-    public function update(Request $request, Film $film)
-    {
-        $data = $request->validate([
-            'name'          => 'required|string|max:255',
-            'original_name' => 'nullable|string|max:255',
-            'format'        => ['required', Rule::enum(FilmFormat::class)],
-            'cover'         => 'nullable|image|max:10240',
-            'release_date'  => 'nullable|date',
-            'description'   => 'nullable|string|max:65536',
-            'genres'        => 'nullable|array|exists:genres,id',
-            'countries'     => 'nullable|array|exists:countries,id',
-            'tags'          => 'nullable|array|exists:tags,id',
-            'companies'     => 'nullable|array|exists:companies,id'
-        ]);
-
-        if ($request->hasFile('cover')) {
-            $data['cover'] = $request->file('cover')->store('films', 'public');
-        } else {
-            $data['cover'] = $film->cover;
-        }
-
-        $film->fill($data);
-        $film->genres()->sync($data['genres'] ?? []);
-        $film->countries()->sync($data['countries'] ?? []);
-        $film->tags()->sync($data['tags'] ?? []);
-        $film->companies()->sync($data['companies'] ?? []);
-        $film->save();
-    }
-
-    public function destroy(Film $film)
-    {
-        $film->delete();
     }
 }

@@ -60,59 +60,11 @@ class PersonController extends Controller
         return PersonResource::collection($this->applyPagination($data, $query));
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name'          => 'required|string|max:255',
-            'original_name' => 'nullable|string|max:255',
-            'birth_date'    => 'nullable|date',
-            'death_date'    => 'nullable|date',
-            'sex'           => ['nullable', Rule::enum(PersonSex::class)],
-            'photo'         => 'nullable|image|max:10240',
-            'country_id'    => 'nullable|exists:countries,id'
-        ]);
-
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('people', 'public');
-        }
-
-        Person::create([
-            ...$data,
-            'author_id' => $request->user()->id
-        ]);
-    }
-
     public function show(Person $person)
     {
         $person->load(['films', 'films.film', 'country'])
                ->loadCount('films');
 
         return new PersonResource($person);
-    }
-
-    public function update(Request $request, Person $person)
-    {
-        $data = $request->validate([
-            'name'          => 'required|string|max:255',
-            'original_name' => 'nullable|string|max:255',
-            'birth_date'    => 'nullable|date',
-            'death_date'    => 'nullable|date',
-            'sex'           => ['nullable', Rule::enum(PersonSex::class)],
-            'photo'         => 'nullable|image|max:10240',
-            'country_id'    => 'nullable|exists:countries,id'
-        ]);
-
-        if ($request->hasFile('photo')) {
-            $data['photo'] = $request->file('photo')->store('people', 'public');
-        } else {
-            $data['photo'] = $person->photo;
-        }
-
-        $person->update($data);
-    }
-
-    public function destroy(Person $person)
-    {
-        $person->delete();
     }
 }

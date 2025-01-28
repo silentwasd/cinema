@@ -19,33 +19,4 @@ class  RatingController extends Controller
                  ->get()
         );
     }
-
-    public function store(Request $request, Film $film)
-    {
-        $data = $request->validate([
-            'data' => 'required|array'
-        ]);
-
-        $film->ratings()->create([
-            ...$data,
-            'user_id' => $request->user()->id
-        ]);
-    }
-
-    public function update(Request $request, Film $film, Rating $rating)
-    {
-        $data = $request->validate([
-            'data' => 'required|array'
-        ]);
-
-        $rating->update([
-            ...$data,
-            'user_id' => $request->user()->id
-        ]);
-    }
-
-    public function destroy(Film $film, Rating $rating)
-    {
-        $rating->delete();
-    }
 }

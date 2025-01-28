@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Management;
 
+use App\Enums\FilmCinemaStatus;
 use App\Enums\FilmFormat;
 use App\Enums\FilmWatchStatus;
-use App\Enums\PersonRole;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Management\FilmWatcherResource;
 use App\Models\Film;
@@ -42,6 +42,7 @@ class FilmWatcherController extends Controller
 
         $query = $request->user()
                          ->films()
+                         ->whereHas('film', fn(Builder $has) => $has->where('cinema_status', FilmCinemaStatus::Published))
                          ->with(['film', 'film.people', 'film.people.person'])
                          ->getQuery();
 

@@ -26,18 +26,6 @@ Route::prefix('management')->group(function () {
         Route::get('genres', [Management\GenreController::class, 'index']);
         Route::get('countries', [Management\CountryController::class, 'index']);
         Route::get('tags', [Management\TagController::class, 'index']);
-
-        Route::middleware(AdminMiddleware::class)
-             ->apiResource('genres', Management\GenreController::class)
-             ->except(['show', 'index']);
-
-        Route::middleware(AdminMiddleware::class)
-             ->apiResource('countries', Management\CountryController::class)
-             ->except(['show', 'index']);
-
-        Route::middleware(AdminMiddleware::class)
-             ->apiResource('tags', Management\TagController::class)
-             ->except(['show', 'index']);
     });
 
     Route::apiResource('films', Management\FilmController::class)->only(['show']);
@@ -59,12 +47,6 @@ Route::middleware(['auth:sanctum', AdminMiddleware::class])->prefix('production'
     Route::apiResource('films.audio-variants', Production\FilmAudioVariantController::class);
     Route::post('films/{film}/audio-variants/preview', [Production\FilmAudioVariantController::class, 'preview']);
     Route::post('films/{film}/audio-variants/{audio_variant}/mark-as-default', [Production\FilmAudioVariantController::class, 'markAsDefault']);
-});
-
-Route::middleware('auth:sanctum')->prefix('cinema')->group(function () {
-    /** Until multi-user sync player not exists... */
-    //Route::apiResource('films', Cinema\FilmController::class)->only(['show']);
-    //Route::get('films/{film}/watch', [Cinema\FilmController::class, 'watch']);
 });
 
 Route::apiResource('cinema/films', Cinema\FilmController::class)->only(['show']);

@@ -32,27 +32,4 @@ class CountryController extends Controller
 
         return CountryResource::collection($this->applyPagination($data, $query));
     }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-
-        Country::create($data);
-    }
-
-    public function update(Request $request, Country $Country)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-
-        $Country->update($data);
-    }
-
-    public function destroy(Country $Country)
-    {
-        $Country->delete();
-    }
 }

@@ -32,27 +32,4 @@ class TagController extends Controller
 
         return TagResource::collection($this->applyPagination($data, $query));
     }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-
-        Tag::create($data);
-    }
-
-    public function update(Request $request, Tag $tag)
-    {
-        $data = $request->validate([
-            'name' => 'required|string|max:255'
-        ]);
-
-        $tag->update($data);
-    }
-
-    public function destroy(Tag $tag)
-    {
-        $tag->delete();
-    }
 }

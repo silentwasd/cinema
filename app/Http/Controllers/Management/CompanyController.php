@@ -35,40 +35,10 @@ class CompanyController extends Controller
         return CompanyResource::collection($this->applyPagination($data, $query));
     }
 
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'nullable|string|max:65536',
-            'link'        => 'nullable|string|url|max:255'
-        ]);
-
-        Company::create([
-            ...$data,
-            'author_id' => auth()->id()
-        ]);
-    }
-
     public function show(Company $company)
     {
         $company->load('films');
 
         return new CompanyResource($company);
-    }
-
-    public function update(Request $request, Company $company)
-    {
-        $data = $request->validate([
-            'name'        => 'required|string|max:255',
-            'description' => 'nullable|string|max:65536',
-            'link'        => 'nullable|string|url|max:255'
-        ]);
-
-        $company->update($data);
-    }
-
-    public function destroy(Company $company)
-    {
-        $company->delete();
     }
 }
