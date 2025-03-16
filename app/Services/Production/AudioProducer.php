@@ -86,7 +86,7 @@ class AudioProducer
             $command .= ' -ss ' . $this->start;
 
         if ($this->input)
-            $command .= ' -i "' . addslashes($this->input) . '"';
+            $command .= ' -i "' . escapeshellarg($this->input);
 
         if ($this->duration)
             $command .= ' -t ' . $this->duration;
@@ -102,12 +102,12 @@ class AudioProducer
         $command .= ' -ac 2';
 
         if ($this->asHls)
-            $command .= ' -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename "' . addslashes($this->output) . '_%04d.ts"';
+            $command .= ' -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename ' . escapeshellarg($this->output . '_%04d.ts');
 
         if ($this->output && !$this->asHls)
-            $command .= ' "' . addslashes($this->output) . '"';
+            $command .= ' ' . escapeshellarg($this->output);
         else if ($this->output && $this->asHls)
-            $command .= ' "' . addslashes($this->output) . '.m3u8"';
+            $command .= ' ' . escapeshellarg($this->output  . '.m3u8');
 
         if ($progressCbk)
             $inputData = $this->production->getData($this->input);
