@@ -86,7 +86,7 @@ class AudioProducer
             $command .= ' -ss ' . $this->start;
 
         if ($this->input)
-            $command .= ' -i "' . escapeshellarg($this->input);
+            $command .= ' -i ' . escapeshellarg($this->input);
 
         if ($this->duration)
             $command .= ' -t ' . $this->duration;
