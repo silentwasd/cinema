@@ -33,8 +33,8 @@ class ProductionService
 
     public function getData(string $path): array
     {
-        $slashedPath = escapeshellarg($path);
-        $result      = Process::run("ffprobe -v quiet -print_format json -show_format -show_streams \"$slashedPath\"");
+        $escapedPath = escapeshellarg($path);
+        $result      = Process::run("ffprobe -v quiet -print_format json -show_format -show_streams $escapedPath");
         return json_decode($result->output(), true);
     }
 
