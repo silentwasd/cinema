@@ -22,7 +22,7 @@ class DownloadController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'url' => 'required|string|max:255'
+            'url' => 'required|string|max:512'
         ]);
 
         $download = Download::create($data);
