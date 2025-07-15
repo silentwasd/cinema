@@ -98,6 +98,8 @@ class VideoProducer
     {
         $command = 'ffmpeg';
 
+        $inputData = $this->production->getData($this->input);
+
         if ($this->start)
             $command .= ' -ss ' . $this->start;
 
@@ -107,7 +109,9 @@ class VideoProducer
         if ($this->duration)
             $command .= ' -t ' . $this->duration;
 
-        $command .= ' -map 0:0';
+        $videoStreamIndex = collect($inputData['streams'])->filter(fn($s) => $s['codec_type'] == 'video')->keys()[0];
+
+        $command .= ' -map 0:' . $videoStreamIndex;
 
         if ($this->codec)
             $command .= ' -c:v ' . $this->codec;
@@ -130,12 +134,7 @@ class VideoProducer
         if ($this->output && !$this->asHls)
             $command .= ' ' . escapeshellarg($this->output);
         else if ($this->output && $this->asHls)
-            $command .= ' ' . escapeshellarg($this->output  . '.m3u8');
-
-        if ($progressCbk)
-            $inputData = $this->production->getData($this->input);
-        else
-            $inputData = null;
+            $command .= ' ' . escapeshellarg($this->output . '.m3u8');
 
         return Process::timeout($this->timeout)->run(
             $command,
